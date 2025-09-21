@@ -12,7 +12,7 @@
         }
 
         @font-face {
-            font-family: 'ClassWiz' ;
+            font-family: 'ClassWiz';
             src: url('ClassWizXDisplay-Regular.ttf');
         }
         
@@ -53,6 +53,7 @@
             text-align: left;
             padding: 5px;
             font-weight: 500;
+            position: relative;
         }
         
         .result {
@@ -138,6 +139,21 @@
             font-weight: 500;
         }
         
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background-color: #000;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
         @media (max-width: 600px) {
             .calculator-container {
                 max-width: 100%;
@@ -197,10 +213,10 @@
             
             <!-- 第四行 -->
             <div class="buttons-grid">
-                <button class="btn function" data-value="↑">↑</button>
-                <button class="btn function" data-value="↓">↓</button>
-                <button class="btn function" data-value="←">←</button>
-                <button class="btn function" data-value="→">→</button>
+                <button class="btn function" id="left-arrow">RESET</button>
+                <button class="btn function" id="right-arrow">→</button>
+                <button class="btn function" id="cursor-left"><</button>
+                <button class="btn function" id="cursor-right">></button>
             </div>
             
             <!-- 第五行 -->
@@ -276,34 +292,93 @@
             }
         }
 
+        // 自定义平方根函数，支持虚数
+        function customSqrt(x) {
+            if (x >= 0) {
+                return Math.sqrt(x);
+            } else {
+                return Math.sqrt(-x) + "i";
+            }
+        }
+
         class Calculator {
             constructor() {
                 this.expressionElement = document.getElementById('expression');
                 this.resultElement = document.getElementById('result');
                 this.shiftActive = false;
                 this.alphaActive = false;
-                this.fractionMode = false; // 新增：分数模式状态
+                this.fractionMode = false;
+                this.cursorPosition = 0;
+                this.cursorVisible = true;
                 this.lastResult = 0;
                 this.expression = '';
                 this.result = '0';
+                this.variables = {
+                    'A': 0, 'B': 0, 'C': 0, 'D': 0,
+                    'X': 0, 'Y': 0, 'Z': 0, 'T': 0
+                };
+                
                 this.updateDisplay();
                 this.setupEventListeners();
+                this.startCursorBlink();
+            }
+            
+            startCursorBlink() {
+                setInterval(() => {
+                    this.cursorVisible = !this.cursorVisible;
+                    this.updateDisplay();
+                }, 500);
             }
             
             clear() {
                 this.expression = '';
                 this.result = '0';
+                this.cursorPosition = 0;
                 this.updateDisplay();
             }
             
-            deleteLast() {
-                this.expression = this.expression.slice(0, -1);
+            resetVariables() {
+                for (let key in this.variables) {
+                    this.variables[key] = 0;
+                }
+                this.result = "Variables reset";
+                this.updateDisplay();
+                
+                setTimeout(() => {
+                    this.result = '0';
+                    this.updateDisplay();
+                }, 2000);
+            }
+            
+            deleteAtCursor() {
+                if (this.cursorPosition > 0) {
+                    this.expression = this.expression.slice(0, this.cursorPosition - 1) + 
+                                     this.expression.slice(this.cursorPosition);
+                    this.cursorPosition--;
+                    this.updateDisplay();
+                }
+            }
+            
+            insertAtCursor(value) {
+                this.expression = this.expression.slice(0, this.cursorPosition) + 
+                                 value + 
+                                 this.expression.slice(this.cursorPosition);
+                this.cursorPosition += value.length;
                 this.updateDisplay();
             }
             
-            appendToExpression(value) {
-                this.expression += value;
-                this.updateDisplay();
+            moveCursorLeft() {
+                if (this.cursorPosition > 0) {
+                    this.cursorPosition--;
+                    this.updateDisplay();
+                }
+            }
+            
+            moveCursorRight() {
+                if (this.cursorPosition < this.expression.length) {
+                    this.cursorPosition++;
+                    this.updateDisplay();
+                }
             }
             
             executeCalculation() {
@@ -314,20 +389,28 @@
                         .replace(/÷/g, '/')
                         .replace(/𝜋/g, Math.PI)
                         .replace(/e/g, Math.E)
-                        .replace(/𝒊/g, Math.i)
+                        .replace(/𝒊/g, 'i')
                         .replace(/sin\(/g, 'Math.sin(')
                         .replace(/cos\(/g, 'Math.cos(')
                         .replace(/tan\(/g, 'Math.tan(')
-                        .replace(/√\(/g, 'Math.sqrt(')
+                        .replace(/√\(/g, 'customSqrt(')
                         .replace(/lcd\(/g, 'Math.lcd(')
-                        .replace(/gcm\(/g, 'Math.gcm(')
-                        
+                        .replace(/gcm\(/g, 'Math.gcm(');
+                    
+                    // 替换变量值为实际值
+                    for (let key in this.variables) {
+                        const regex = new RegExp(key, 'g');
+                        expressionToEval = expressionToEval.replace(regex, this.variables[key]);
+                    }
+                    
                     // 使用Function构造函数避免直接使用eval
                     const calcFunction = new Function('return ' + expressionToEval);
                     let rawResult = calcFunction();
                     
-                    // 限制小数位数
-                    if (typeof rawResult === 'number') {
+                    // 处理虚数结果
+                    if (typeof rawResult === 'string' && rawResult.includes('i')) {
+                        this.result = rawResult;
+                    } else if (typeof rawResult === 'number') {
                         // 检查是否为整数
                         if (Number.isInteger(rawResult)) {
                             this.result = rawResult.toString();
@@ -349,6 +432,62 @@
                     this.updateDisplay();
                     
                     // 2秒后恢复
+                    setTimeout(() => {
+                        this.result = '0';
+                        this.updateDisplay();
+                    }, 2000);
+                }
+            }
+            
+            assignVariable() {
+                try {
+                    // 查找→符号
+                    const arrowIndex = this.expression.indexOf('→');
+                    if (arrowIndex === -1) {
+                        this.result = "No assignment found";
+                        this.updateDisplay();
+                        return;
+                    }
+                    
+                    // 提取变量名和值
+                    const variableName = this.expression.slice(arrowIndex + 1).trim();
+                    const valueExpr = this.expression.slice(0, arrowIndex);
+                    
+                    // 检查变量名是否有效
+                    if (!this.variables.hasOwnProperty(variableName)) {
+                        this.result = "Invalid variable";
+                        this.updateDisplay();
+                        return;
+                    }
+                    
+                    // 计算值
+                    let valueToEval = valueExpr
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/𝜋/g, Math.PI)
+                        .replace(/e/g, Math.E)
+                        .replace(/𝒊/g, 'i');
+                    
+                    // 替换变量值为实际值
+                    for (let key in this.variables) {
+                        const regex = new RegExp(key, 'g');
+                        valueToEval = valueToEval.replace(regex, this.variables[key]);
+                    }
+                    
+                    const calcFunction = new Function('return ' + valueToEval);
+                    const value = calcFunction();
+                    
+                    // 赋值给变量
+                    this.variables[variableName] = value;
+                    this.result = `${variableName} = ${value}`;
+                    this.expression = '';
+                    this.cursorPosition = 0;
+                    
+                    this.updateDisplay();
+                } catch (error) {
+                    this.result = 'Assignment error';
+                    this.updateDisplay();
+                    
                     setTimeout(() => {
                         this.result = '0';
                         this.updateDisplay();
@@ -386,9 +525,18 @@
                     fmtBtn.classList.add('active-fmt');
                     // 转换为分数显示
                     if (this.result !== 'Error' && this.result !== '0') {
-                        const num = parseFloat(this.result);
-                        if (!isNaN(num)) {
-                            this.result = decimalToFraction(num);
+                        // 检查是否为虚数
+                        if (this.result.includes('i')) {
+                            this.result = "Cannot convert complex to fraction";
+                            setTimeout(() => {
+                                this.result = '0';
+                                this.updateDisplay();
+                            }, 2000);
+                        } else {
+                            const num = parseFloat(this.result);
+                            if (!isNaN(num)) {
+                                this.result = decimalToFraction(num);
+                            }
                         }
                     }
                 } else {
@@ -415,32 +563,32 @@
                 if (this.shiftActive) {
                     switch(value) {
                     case '1':
-                        this.appendToExpression('𝜋');
+                        this.insertAtCursor('𝜋');
                         break;
                     case '2':
-                        this.appendToExpression('e');
+                        this.insertAtCursor('e');
                         break;
                     case '3':
-                        this.appendToExpression('𝒊');
+                        this.insertAtCursor('𝒊');
                         break;
                     case '4':
-                        this.appendToExpression('sin(');
+                        this.insertAtCursor('sin(');
                         break;
                     case '5':
-                        this.appendToExpression('cos(');
+                        this.insertAtCursor('cos(');
                         break;
                     case '6':
-                        this.appendToExpression('tan(');
+                        this.insertAtCursor('tan(');
                         break;
                     case '7':
-                        this.appendToExpression('√(');
+                        this.insertAtCursor('√(');
                         break;
                     default:
-                        this.appendToExpression(value);
+                        this.insertAtCursor(value);
                     }
                     this.toggleShift(); // 输入后关闭shift模式
                 } else {
-                    this.appendToExpression(value);
+                    this.insertAtCursor(value);
                 }
             }
 
@@ -448,12 +596,19 @@
                 if (this.alphaActive) {
                     this.toggleAlpha(); // 输入后关闭alpha模式
                 } else {
-                    this.appendToExpression(value);
+                    this.insertAtCursor(value);
                 }
             }
             
             updateDisplay() {
-                this.expressionElement.textContent = this.expression;
+                // 更新表达式显示，包括光标
+                let displayExpression = this.expression;
+                if (this.cursorVisible) {
+                    displayExpression = this.expression.slice(0, this.cursorPosition) + 
+                                      '<span class="cursor"></span>' + 
+                                      this.expression.slice(this.cursorPosition);
+                }
+                this.expressionElement.innerHTML = displayExpression;
                 this.resultElement.textContent = this.result;
             }
             
@@ -467,7 +622,7 @@
                         } else if (this.alphaActive) {
                             this.handleAlphaInput(value);
                         } else {
-                            this.appendToExpression(value);
+                            this.insertAtCursor(value);
                         }
                     });
                 });
@@ -475,14 +630,14 @@
                 // 运算符按钮
                 document.querySelectorAll('.operator').forEach(button => {
                     button.addEventListener('click', () => {
-                        this.appendToExpression(button.getAttribute('data-value'));
+                        this.insertAtCursor(button.getAttribute('data-value'));
                     });
                 });
                 
                 // 括号和逗号、小数点
                 document.querySelectorAll('.function[data-value]').forEach(button => {
                     button.addEventListener('click', () => {
-                        this.appendToExpression(button.getAttribute('data-value'));
+                        this.insertAtCursor(button.getAttribute('data-value'));
                     });
                 });
                 
@@ -498,7 +653,7 @@
                 
                 // 删除按钮
                 document.getElementById('delete').addEventListener('click', () => {
-                    this.deleteLast();
+                    this.deleteAtCursor();
                 });
                 
                 // Shift按钮
@@ -518,15 +673,20 @@
                 
                 // Ans按钮
                 document.getElementById('ans').addEventListener('click', () => {
-                    this.appendToExpression(this.lastResult.toString());
+                    this.insertAtCursor(this.lastResult.toString());
                 });
                 
                 // 百分比按钮
                 document.getElementById('percent').addEventListener('click', () => {
                     try {
                         // 计算当前表达式的百分比
-                        const calcFunction = new Function('return ' + this.expression + '/100');
+                        let exprToEval = this.expression
+                            .replace(/×/g, '*')
+                            .replace(/÷/g, '/');
+                        
+                        const calcFunction = new Function('return ' + exprToEval + '/100');
                         this.expression = calcFunction().toString();
+                        this.cursorPosition = this.expression.length;
                         this.updateDisplay();
                     } catch (error) {
                         this.result = 'Error';
@@ -539,6 +699,26 @@
                     }
                 });
                 
+                // 光标左移按钮
+                document.getElementById('cursor-left').addEventListener('click', () => {
+                    this.moveCursorLeft();
+                });
+                
+                // 光标右移按钮
+                document.getElementById('cursor-right').addEventListener('click', () => {
+                    this.moveCursorRight();
+                });
+                
+                // RESET按钮 - 重置所有变量
+                document.getElementById('left-arrow').addEventListener('click', () => {
+                    this.resetVariables();
+                });
+                
+                // →按钮 - 赋值功能
+                document.getElementById('right-arrow').addEventListener('click', () => {
+                    this.insertAtCursor('→');
+                });
+                
                 // 其他功能按钮（暂时不实现具体功能）
                 document.getElementById('pwr').addEventListener('click', () => {
                     // 电源功能，这里只是示例
@@ -548,6 +728,15 @@
                 document.getElementById('ctl').addEventListener('click', () => {
                     // CTL功能，这里只是示例
                     alert('CTL功能');
+                });
+                
+                // 修改执行按钮，使其在表达式中有→时执行赋值操作
+                document.getElementById('execute').addEventListener('click', () => {
+                    if (this.expression.includes('→')) {
+                        this.assignVariable();
+                    } else {
+                        this.executeCalculation();
+                    }
                 });
             }
         }
