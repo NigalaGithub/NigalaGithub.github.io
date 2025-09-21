@@ -312,11 +312,13 @@
                     let expressionToEval = this.expression
                         .replace(/×/g, '*')
                         .replace(/÷/g, '/')
-                        .replace(/π/g, Math.PI)
+                        .replace(/𝜋/g, Math.PI)
                         .replace(/e/g, Math.E)
+                        .replace(/𝒊/g, Math.i)
                         .replace(/sin\(/g, 'Math.sin(')
                         .replace(/cos\(/g, 'Math.cos(')
                         .replace(/tan\(/g, 'Math.tan(')
+                        .replace(/√\(/g, 'Math.sqrt(')
                         .replace(/lcd\(/g, 'Math.lcd(')
                         .replace(/gcm\(/g, 'Math.gcm(')
                         
@@ -413,10 +415,13 @@
                 if (this.shiftActive) {
                     switch(value) {
                     case '1':
-                        this.appendToExpression('π');
+                        this.appendToExpression('𝜋');
                         break;
                     case '2':
                         this.appendToExpression('e');
+                        break;
+                    case '3':
+                        this.appendToExpression('𝒊');
                         break;
                     case '4':
                         this.appendToExpression('sin(');
@@ -426,6 +431,9 @@
                         break;
                     case '6':
                         this.appendToExpression('tan(');
+                        break;
+                    case '7':
+                        this.appendToExpression('√(');
                         break;
                     default:
                         this.appendToExpression(value);
