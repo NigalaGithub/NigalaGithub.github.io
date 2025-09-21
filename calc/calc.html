@@ -99,23 +99,28 @@
         }
         
         .operator {
-            background-color: #2c3e50;
+            background-color: #000000;
         }
         
         .function {
-            background-color: #7f8c8d;
+            background-color: #000000;
             font-size: 0.9rem;
         }
         
         .equals {
-            background-color: #e74c3c;
+            background-color: #000000;
         }
         
         .clear {
-            background-color: #c0392b;
+            background-color: #000000;
         }
         
         .active-shift {
+            background-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        }
+
+        .active-alpha {
             background-color: #3498db;
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
         }
@@ -198,7 +203,7 @@
                 <button class="btn number" data-value="1">1</button>
                 <button class="btn number" data-value="2">2</button>
                 <button class="btn number" data-value="3">3</button>
-                <button class="btn operator" data-value="×">✖️</button>
+                <button class="btn operator" data-value="×">×</button>
             </div>
             
             <!-- 第六行 -->
@@ -206,7 +211,7 @@
                 <button class="btn number" data-value="4">4</button>
                 <button class="btn number" data-value="5">5</button>
                 <button class="btn number" data-value="6">6</button>
-                <button class="btn operator" data-value="÷">➗</button>
+                <button class="btn operator" data-value="÷">÷</button>
             </div>
             
             <!-- 第七行 -->
@@ -225,7 +230,7 @@
                 <button class="btn operator" data-value="-">-</button>
             </div>
             
-            <!-- 新增的底部行 -->
+            <!-- 第九行 -->
             <div class="buttons-grid">
                 <button class="btn function" id="ans">Ans</button>
                 <button class="btn function" id="percent">%</button>
@@ -241,6 +246,7 @@
                 this.expressionElement = document.getElementById('expression');
                 this.resultElement = document.getElementById('result');
                 this.shiftActive = false;
+                this.alphaActive = false;
                 this.lastResult = 0;
                 this.expression = '';
                 this.result = '0';
@@ -271,7 +277,14 @@
                         .replace(/×/g, '*')
                         .replace(/÷/g, '/')
                         .replace(/π/g, Math.PI)
-                        .replace(/e/g, Math.E);
+                        .replace(/e/g, Math.E)
+                        .replace(/sin\(/g, 'Math.sin(')
+                        .replace(/cos\(/g, 'Math.cos(')
+                        .replace(/tan\(/g, 'Math.tan(')
+                        .replace(/lcd\(/g, 'Math.lcd(')
+                        .replace(/gcm\(/g, 'Math.gcm(')
+                        
+                    
                     
                     // 使用Function构造函数避免直接使用eval
                     const calcFunction = new Function('return ' + expressionToEval);
@@ -305,12 +318,45 @@
             
             handleShiftInput(value) {
                 if (this.shiftActive) {
-                    if (value === '1') {
+                    switch(value) {
+                    case '1':
                         this.appendToExpression('π');
-                    } else if (value === '2') {
+                        break;
+                    case '2':
                         this.appendToExpression('e');
+                        break;
+                    case '4':
+                        this.appendToExpression('sin(');
+                        break;
+                    case '5':
+                        this.appendToExpression('cos(');
+                        break;
+                    case '6':
+                        this.appendToExpression('tan(');
+                        break;
+                    default:
+                        this.appendToExpression(value);
                     }
                     this.toggleShift(); // 输入后关闭shift模式
+                } else {
+                    this.appendToExpression(value);
+                }
+            }
+
+            toggleAlpha() {
+                this.alphaActive = !this.alphaActive;
+                const alphaBtn = document.getElementById('alpha');
+                
+                if (this.alphaActive) {
+                    alphaBtn.classList.add('active-alpha');
+                } else {
+                    alphaBtn.classList.remove('active-alpha');
+                }
+            }
+            
+            handleAlphaInput(value) {
+                if (this.alphaActive) {
+                    this.toggleAlpha(); // 输入后关闭alpha模式
                 } else {
                     this.appendToExpression(value);
                 }
@@ -328,6 +374,8 @@
                         const value = button.getAttribute('data-value');
                         if (this.shiftActive) {
                             this.handleShiftInput(value);
+                        } else if (this.alphaActive) {
+                            this.handleAlphaInput(value);
                         } else {
                             this.appendToExpression(value);
                         }
@@ -367,6 +415,10 @@
                 document.getElementById('shift').addEventListener('click', () => {
                     this.toggleShift();
                 });
+
+                document.getElementById('alpha').addEventListener('click', () => {
+                    this.toggleAlpha();
+                });
                 
                 // Ans按钮
                 document.getElementById('ans').addEventListener('click', () => {
@@ -395,11 +447,6 @@
                 document.getElementById('pwr').addEventListener('click', () => {
                     // 电源功能，这里只是示例
                     alert('电源功能');
-                });
-                
-                document.getElementById('alp').addEventListener('click', () => {
-                    // ALP功能，这里只是示例
-                    alert('ALP功能');
                 });
                 
                 document.getElementById('ctl').addEventListener('click', () => {
