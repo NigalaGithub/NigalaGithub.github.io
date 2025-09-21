@@ -139,21 +139,6 @@
             font-weight: 500;
         }
         
-        .cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1.2em;
-            background-color: #000;
-            animation: blink 1s infinite;
-            vertical-align: middle;
-            margin: 0 2px;
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-        
         @media (max-width: 600px) {
             .calculator-container {
                 max-width: 100%;
@@ -603,12 +588,19 @@
             updateDisplay() {
                 // 更新表达式显示，包括光标
                 let displayExpression = this.expression;
+                
+                // 插入光标字符
                 if (this.cursorVisible) {
                     displayExpression = this.expression.slice(0, this.cursorPosition) + 
-                                      '<span class="cursor"></span>' + 
+                                      '■' + 
+                                      this.expression.slice(this.cursorPosition);
+                } else {
+                    displayExpression = this.expression.slice(0, this.cursorPosition) + 
+                                      '□' + 
                                       this.expression.slice(this.cursorPosition);
                 }
-                this.expressionElement.innerHTML = displayExpression;
+                
+                this.expressionElement.textContent = displayExpression;
                 this.resultElement.textContent = this.result;
             }
             
