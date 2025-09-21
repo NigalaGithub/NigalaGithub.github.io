@@ -42,12 +42,13 @@
         }
         
         .expression {
-            font-size: 1.2rem;
-            color: #666;
-            min-height: 30px;
+            font-size: 2.2rem;
+            color: #000;
+            min-height: 40px;
             word-wrap: break-word;
-            text-align: right;
+            text-align: left;
             padding: 5px;
+            font-weight: 500;
         }
         
         .result {
@@ -67,8 +68,9 @@
         
         .buttons-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             grid-gap: 8px;
+            margin-bottom: 8px;
         }
         
         .btn {
@@ -105,8 +107,13 @@
             background-color: #e74c3c;
         }
         
-        .clear, .delete {
+        .clear {
             background-color: #c0392b;
+        }
+        
+        .active-shift {
+            background-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
         }
         
         .calculator-title {
@@ -122,16 +129,12 @@
                 max-width: 100%;
             }
             
-            .buttons-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
             .btn {
                 padding: 14px 0;
-                font-size: 1rem;
+                font-size: 0.9rem;
             }
             
-            .result {
+            .expression, .result {
                 font-size: 1.8rem;
             }
         }
@@ -148,98 +151,82 @@
         <div class="buttons-area">
             <!-- 第一行 -->
             <div class="buttons-grid">
-                <button class="btn function">PWR</button>
-                <button class="btn function">SFT</button>
-                <button class="btn function">ALP</button>
-                <button class="btn function">CTL</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn function" id="pwr">PWR</button>
+                <button class="btn function" id="shift">SFT</button>
+                <button class="btn function" id="alp">ALP</button>
+                <button class="btn function" id="ctl">CTL</button>
             </div>
             
-            <!-- 第二行 -->
+            <!-- 第二行（第一部分） -->
             <div class="buttons-grid">
-                <button class="btn function">A</button>
-                <button class="btn function">B</button>
-                <button class="btn function">C</button>
-                <button class="btn function">D</button>
-                <button class="btn function">X</button>
-                <button class="btn function">Y</button>
-                <button class="btn function">Z</button>
-                <button class="btn function">T</button>
+                <button class="btn function" data-value="A">A</button>
+                <button class="btn function" data-value="B">B</button>
+                <button class="btn function" data-value="C">C</button>
+                <button class="btn function" data-value="D">D</button>
+            </div>
+            
+            <!-- 第二行（第二部分） -->
+            <div class="buttons-grid">
+                <button class="btn function" data-value="X">X</button>
+                <button class="btn function" data-value="Y">Y</button>
+                <button class="btn function" data-value="Z">Z</button>
+                <button class="btn function" data-value="T">T</button>
             </div>
             
             <!-- 第三行 -->
             <div class="buttons-grid">
-                <button class="btn function">(</button>
-                <button class="btn function">)</button>
-                <button class="btn function">,</button>
-                <button class="btn function">.</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn function" data-value="(">(</button>
+                <button class="btn function" data-value=")">)</button>
+                <button class="btn function" data-value=",">,</button>
+                <button class="btn function" data-value=".">.</button>
             </div>
             
             <!-- 第四行 -->
             <div class="buttons-grid">
-                <button class="btn function">↑</button>
-                <button class="btn function">↓</button>
-                <button class="btn function">←</button>
-                <button class="btn function">→</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn function" data-value="↑">↑</button>
+                <button class="btn function" data-value="↓">↓</button>
+                <button class="btn function" data-value="←">←</button>
+                <button class="btn function" data-value="→">→</button>
             </div>
             
             <!-- 第五行 -->
             <div class="buttons-grid">
-                <button class="btn number">1</button>
-                <button class="btn number">2</button>
-                <button class="btn number">3</button>
-                <button class="btn operator">✖️</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn number" data-value="1">1</button>
+                <button class="btn number" data-value="2">2</button>
+                <button class="btn number" data-value="3">3</button>
+                <button class="btn operator" data-value="×">✖️</button>
             </div>
             
             <!-- 第六行 -->
             <div class="buttons-grid">
-                <button class="btn number">4</button>
-                <button class="btn number">5</button>
-                <button class="btn number">6</button>
-                <button class="btn operator">➗</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn number" data-value="4">4</button>
+                <button class="btn number" data-value="5">5</button>
+                <button class="btn number" data-value="6">6</button>
+                <button class="btn operator" data-value="÷">➗</button>
             </div>
             
             <!-- 第七行 -->
             <div class="buttons-grid">
-                <button class="btn number">7</button>
-                <button class="btn number">8</button>
-                <button class="btn number">9</button>
-                <button class="btn operator">+</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn number" data-value="7">7</button>
+                <button class="btn number" data-value="8">8</button>
+                <button class="btn number" data-value="9">9</button>
+                <button class="btn operator" data-value="+">+</button>
             </div>
             
             <!-- 第八行 -->
             <div class="buttons-grid">
-                <button class="btn equals">EXE</button>
-                <button class="btn number">0</button>
-                <button class="btn function">FMT</button>
-                <button class="btn operator">-</button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
-                <button class="btn function" style="visibility: hidden;"></button>
+                <button class="btn equals" id="execute">EXE</button>
+                <button class="btn number" data-value="0">0</button>
+                <button class="btn function" id="fmt">FMT</button>
+                <button class="btn operator" data-value="-">-</button>
+            </div>
+            
+            <!-- 新增的底部行 -->
+            <div class="buttons-grid">
+                <button class="btn function" id="ans">Ans</button>
+                <button class="btn function" id="percent">%</button>
+                <button class="btn function" id="delete">DEL</button>
+                <button class="btn clear" id="clear">AC</button>
             </div>
         </div>
     </div>
@@ -249,137 +236,176 @@
             constructor() {
                 this.expressionElement = document.getElementById('expression');
                 this.resultElement = document.getElementById('result');
-                this.clear();
+                this.shiftActive = false;
+                this.lastResult = 0;
+                this.expression = '';
+                this.result = '0';
+                this.updateDisplay();
                 this.setupEventListeners();
             }
             
             clear() {
-                this.currentInput = '0';
                 this.expression = '';
                 this.result = '0';
-                this.operator = null;
-                this.waitingForOperand = false;
                 this.updateDisplay();
             }
             
-            delete() {
-                if (this.currentInput.length > 1) {
-                    this.currentInput = this.currentInput.slice(0, -1);
+            deleteLast() {
+                this.expression = this.expression.slice(0, -1);
+                this.updateDisplay();
+            }
+            
+            appendToExpression(value) {
+                this.expression += value;
+                this.updateDisplay();
+            }
+            
+            executeCalculation() {
+                try {
+                    // 替换符号为标准运算符
+                    let expressionToEval = this.expression
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/π/g, Math.PI)
+                        .replace(/e/g, Math.E);
+                    
+                    // 使用Function构造函数避免直接使用eval
+                    const calcFunction = new Function('return ' + expressionToEval);
+                    this.result = calcFunction().toString();
+                    this.lastResult = parseFloat(this.result);
+                    
+                    // 更新显示
+                    this.updateDisplay();
+                } catch (error) {
+                    this.result = 'Error';
+                    this.updateDisplay();
+                    
+                    // 2秒后恢复
+                    setTimeout(() => {
+                        this.result = '0';
+                        this.updateDisplay();
+                    }, 2000);
+                }
+            }
+            
+            toggleShift() {
+                this.shiftActive = !this.shiftActive;
+                const shiftBtn = document.getElementById('shift');
+                
+                if (this.shiftActive) {
+                    shiftBtn.classList.add('active-shift');
                 } else {
-                    this.currentInput = '0';
+                    shiftBtn.classList.remove('active-shift');
                 }
-                this.updateDisplay();
             }
             
-            appendNumber(number) {
-                if (this.waitingForOperand) {
-                    this.currentInput = number;
-                    this.waitingForOperand = false;
+            handleShiftInput(value) {
+                if (this.shiftActive) {
+                    if (value === '1') {
+                        this.appendToExpression('π');
+                    } else if (value === '2') {
+                        this.appendToExpression('e');
+                    }
+                    this.toggleShift(); // 输入后关闭shift模式
                 } else {
-                    this.currentInput = this.currentInput === '0' ? number : this.currentInput + number;
+                    this.appendToExpression(value);
                 }
-                this.updateDisplay();
-            }
-            
-            setOperator(operator) {
-                if (this.operator && !this.waitingForOperand) {
-                    this.calculate();
-                }
-                
-                // 转换符号为标准运算符
-                let standardOperator;
-                switch(operator) {
-                    case '✖️':
-                        standardOperator = '×';
-                        break;
-                    case '➗':
-                        standardOperator = '÷';
-                        break;
-                    default:
-                        standardOperator = operator;
-                }
-                
-                this.expression = this.currentInput + ' ' + standardOperator;
-                this.operator = standardOperator;
-                this.waitingForOperand = true;
-                this.updateDisplay();
-            }
-            
-            calculate() {
-                if (!this.operator) return;
-                
-                const prev = parseFloat(this.result !== '0' ? this.result : this.currentInput);
-                const current = parseFloat(this.currentInput);
-                
-                let computation;
-                switch (this.operator) {
-                    case '+':
-                        computation = prev + current;
-                        break;
-                    case '-':
-                        computation = prev - current;
-                        break;
-                    case '×':
-                        computation = prev * current;
-                        break;
-                    case '÷':
-                        if (current === 0) {
-                            alert("不能除以零");
-                            return;
-                        }
-                        computation = prev / current;
-                        break;
-                    default:
-                        return;
-                }
-                
-                this.result = computation.toString();
-                this.currentInput = this.result;
-                this.expression = '';
-                this.operator = null;
-                this.waitingForOperand = false;
-                this.updateDisplay();
             }
             
             updateDisplay() {
-                this.resultElement.textContent = this.currentInput;
                 this.expressionElement.textContent = this.expression;
+                this.resultElement.textContent = this.result;
             }
             
             setupEventListeners() {
                 // 数字按钮
                 document.querySelectorAll('.number').forEach(button => {
                     button.addEventListener('click', () => {
-                        this.appendNumber(button.textContent);
+                        const value = button.getAttribute('data-value');
+                        if (this.shiftActive) {
+                            this.handleShiftInput(value);
+                        } else {
+                            this.appendToExpression(value);
+                        }
                     });
                 });
                 
                 // 运算符按钮
                 document.querySelectorAll('.operator').forEach(button => {
                     button.addEventListener('click', () => {
-                        this.setOperator(button.textContent);
+                        this.appendToExpression(button.getAttribute('data-value'));
                     });
                 });
                 
-                // 等号按钮
-                document.querySelector('.equals').addEventListener('click', () => {
-                    this.calculate();
+                // 括号和逗号、小数点
+                document.querySelectorAll('.function[data-value]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.appendToExpression(button.getAttribute('data-value'));
+                    });
                 });
                 
-                // 功能按钮
-                document.querySelectorAll('.function').forEach(button => {
-                    if (button.textContent === '.' || button.textContent === ',') {
-                        button.addEventListener('click', () => {
-                            if (!this.currentInput.includes('.')) {
-                                this.appendNumber('.');
-                            }
-                        });
-                    } else if (button.textContent === '(' || button.textContent === ')') {
-                        button.addEventListener('click', () => {
-                            this.appendNumber(button.textContent);
-                        });
+                // 执行按钮
+                document.getElementById('execute').addEventListener('click', () => {
+                    this.executeCalculation();
+                });
+                
+                // 清除按钮
+                document.getElementById('clear').addEventListener('click', () => {
+                    this.clear();
+                });
+                
+                // 删除按钮
+                document.getElementById('delete').addEventListener('click', () => {
+                    this.deleteLast();
+                });
+                
+                // Shift按钮
+                document.getElementById('shift').addEventListener('click', () => {
+                    this.toggleShift();
+                });
+                
+                // Ans按钮
+                document.getElementById('ans').addEventListener('click', () => {
+                    this.appendToExpression(this.lastResult.toString());
+                });
+                
+                // 百分比按钮
+                document.getElementById('percent').addEventListener('click', () => {
+                    try {
+                        // 计算当前表达式的百分比
+                        const calcFunction = new Function('return ' + this.expression + '/100');
+                        this.expression = calcFunction().toString();
+                        this.updateDisplay();
+                    } catch (error) {
+                        this.result = 'Error';
+                        this.updateDisplay();
+                        
+                        setTimeout(() => {
+                            this.result = '0';
+                            this.updateDisplay();
+                        }, 2000);
                     }
-                    // 其他功能按钮暂时不实现
+                });
+                
+                // 其他功能按钮（暂时不实现具体功能）
+                document.getElementById('pwr').addEventListener('click', () => {
+                    // 电源功能，这里只是示例
+                    alert('电源功能');
+                });
+                
+                document.getElementById('alp').addEventListener('click', () => {
+                    // ALP功能，这里只是示例
+                    alert('ALP功能');
+                });
+                
+                document.getElementById('ctl').addEventListener('click', () => {
+                    // CTL功能，这里只是示例
+                    alert('CTL功能');
+                });
+                
+                document.getElementById('fmt').addEventListener('click', () => {
+                    // FMT功能，这里只是示例
+                    alert('格式功能');
                 });
             }
         }
