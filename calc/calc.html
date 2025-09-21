@@ -212,10 +212,10 @@
         <div class="buttons-area">
             <!-- 第一行 -->
             <div class="buttons-grid">
-                <button class="btn function" id="pwr">POWER</button>
-                <button class="btn function" id="shift">SHIFT</button>
-                <button class="btn function" id="alp">ALPHA</button>
-                <button class="btn function" id="ctl">目录</button>
+                <button class="btn function" id="pwr">PWR</button>
+                <button class="btn function" id="shift">SFT</button>
+                <button class="btn function" id="alp">ALP</button>
+                <button class="btn function" id="ctl">CTL</button>
             </div>
             
             <!-- 第二行（第一部分） -->
@@ -300,18 +300,18 @@
         const catalogItems = [
             { id: 1, name: "∑(", value: "∑(", description: "求和函数" },
             { id: 2, name: "∏(", value: "∏(", description: "求积函数" },
-            { id: 3, name: "sin(", value: "sin(", description: "SIN" },
-            { id: 4, name: "cos(", value: "cos(", description: "COS" },
-            { id: 5, name: "tan(", value: "tan(", description: "TAN" },
-            { id: 6, name: "sinh(", value: "sinh(", description: "SINH" },
-            { id: 7, name: "cosh(", value: "cosh(", description: "COSH" },
-            { id: 8, name: "tanh(", value: "tanh(", description: "TANH" },
-            { id: 9, name: "sin⁻¹(", value: "sin⁻¹(", description: "SIN^-1" },
-            { id: 10, name: "cos⁻¹(", value: "cos⁻¹(", description: "COS^-1" },
-            { id: 11, name: "tan⁻¹(", value: "tan⁻¹(", description: "TAN^-1" },
-            { id: 12, name: "sinh⁻¹(", value: "sinh⁻¹(", description: "SINH^-1" },
-            { id: 13, name: "cosh⁻¹(", value: "cosh⁻¹(", description: "COSH^-1" },
-            { id: 14, name: "tanh⁻¹(", value: "tanh⁻¹(", description: "TANH^-1" },
+            { id: 3, name: "sin(", value: "sin(", description: "正弦函数" },
+            { id: 4, name: "cos(", value: "cos(", description: "余弦函数" },
+            { id: 5, name: "tan(", value: "tan(", description: "正切函数" },
+            { id: 6, name: "sinh(", value: "sinh(", description: "双曲正弦" },
+            { id: 7, name: "cosh(", value: "cosh(", description: "双曲余弦" },
+            { id: 8, name: "tanh(", value: "tanh(", description: "双曲正切" },
+            { id: 9, name: "sin⁻¹(", value: "sin⁻¹(", description: "反正弦函数" },
+            { id: 10, name: "cos⁻¹(", value: "cos⁻¹(", description: "反余弦函数" },
+            { id: 11, name: "tan⁻¹(", value: "tan⁻¹(", description: "反正切函数" },
+            { id: 12, name: "sinh⁻¹(", value: "sinh⁻¹(", description: "反双曲正弦" },
+            { id: 13, name: "cosh⁻¹(", value: "cosh⁻¹(", description: "反双曲余弦" },
+            { id: 14, name: "tanh⁻¹(", value: "tanh⁻¹(", description: "反双曲正切" },
             { id: 15, name: "∫(", value: "∫(", description: "积分函数" }
         ];
 
@@ -333,7 +333,6 @@
                     'A': 0, 'B': 0, 'C': 0, 'D': 0,
                     'X': 0, 'Y': 0, 'Z': 0, 'T': 0
                 };
-                this.NowCursorBlink = true;
                 
                 this.updateDisplay();
                 this.setupEventListeners();
@@ -341,12 +340,10 @@
             }
             
             startCursorBlink() {
-                if (this.NowCursorBlink) {
-                    setInterval(() => {
-                        this.cursorVisible = !this.cursorVisible;
-                        this.updateDisplay();
-                    }, 500);
-                }
+                setInterval(() => {
+                    this.cursorVisible = !this.cursorVisible;
+                    this.updateDisplay();
+                }, 500);
             }
             
             clear() {
@@ -602,7 +599,6 @@
             }
             
             showCatalog() {
-                this.NowCursorBlink = false;
                 this.catalogActive = true;
                 this.catalogIndex = 0;
                 document.querySelector('.display-area').classList.add('catalog-mode');
@@ -613,7 +609,6 @@
             }
             
             hideCatalog() {
-                this.NowCursorBlink = true;
                 this.catalogActive = false;
                 document.querySelector('.display-area').classList.remove('catalog-mode');
                 this.updateDisplay();
