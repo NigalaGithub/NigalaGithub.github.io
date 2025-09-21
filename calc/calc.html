@@ -124,6 +124,11 @@
             background-color: #3498db;
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
         }
+
+        .active-fmt {
+            background-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        }
         
         .calculator-title {
             text-align: center;
@@ -152,7 +157,7 @@
 <body>
     <div class="calculator-container">
         <div class="display-area">
-            <div class="calculator-title>NiTech TCalcfx-100</div>
+            <div class="calculator-title">NiTech TCalcfx-100</div>
             <div class="expression" id="expression"></div>
             <div class="result" id="result">0</div>
         </div>
@@ -241,12 +246,43 @@
     </div>
 
     <script>
+        // 最大小数位数
+        const MAX_DECIMAL_PLACES = 12;
+        
+        // 小数转分数函数
+        function decimalToFraction(decimal) {
+            if (decimal === 0) return "0";
+            
+            const tolerance = 1.0E-6;
+            let h1 = 1, h2 = 0;
+            let k1 = 0, k2 = 1;
+            let b = decimal;
+            do {
+                const a = Math.floor(b);
+                let aux = h1;
+                h1 = a * h1 + h2;
+                h2 = aux;
+                aux = k1;
+                k1 = a * k1 + k2;
+                k2 = aux;
+                b = 1 / (b - a);
+            } while (Math.abs(decimal - h1 / k1) > decimal * tolerance && !isNaN(b));
+            
+            // 格式化分数
+            if (k1 === 1) {
+                return h1.toString();
+            } else {
+                return h1 + "⌟" + k1;
+            }
+        }
+
         class Calculator {
             constructor() {
                 this.expressionElement = document.getElementById('expression');
                 this.resultElement = document.getElementById('result');
                 this.shiftActive = false;
                 this.alphaActive = false;
+                this.fractionMode = false; // 新增：分数模式状态
                 this.lastResult = 0;
                 this.expression = '';
                 this.result = '0';
@@ -284,12 +320,25 @@
                         .replace(/lcd\(/g, 'Math.lcd(')
                         .replace(/gcm\(/g, 'Math.gcm(')
                         
-                    
-                    
                     // 使用Function构造函数避免直接使用eval
                     const calcFunction = new Function('return ' + expressionToEval);
-                    this.result = calcFunction().toString();
-                    this.lastResult = parseFloat(this.result);
+                    let rawResult = calcFunction();
+                    
+                    // 限制小数位数
+                    if (typeof rawResult === 'number') {
+                        // 检查是否为整数
+                        if (Number.isInteger(rawResult)) {
+                            this.result = rawResult.toString();
+                        } else {
+                            // 限制小数位数
+                            const rounded = parseFloat(rawResult.toFixed(MAX_DECIMAL_PLACES));
+                            // 移除末尾的0
+                            this.result = rounded.toString().replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+                        }
+                        this.lastResult = rawResult;
+                    } else {
+                        this.result = rawResult.toString();
+                    }
                     
                     // 更新显示
                     this.updateDisplay();
@@ -314,6 +363,50 @@
                 } else {
                     shiftBtn.classList.remove('active-shift');
                 }
+            }
+
+            toggleAlpha() {
+                this.alphaActive = !this.alphaActive;
+                const alphaBtn = document.getElementById('alp');
+                
+                if (this.alphaActive) {
+                    alphaBtn.classList.add('active-alpha');
+                } else {
+                    alphaBtn.classList.remove('active-alpha');
+                }
+            }
+            
+            toggleFractionMode() {
+                this.fractionMode = !this.fractionMode;
+                const fmtBtn = document.getElementById('fmt');
+                
+                if (this.fractionMode) {
+                    fmtBtn.classList.add('active-fmt');
+                    // 转换为分数显示
+                    if (this.result !== 'Error' && this.result !== '0') {
+                        const num = parseFloat(this.result);
+                        if (!isNaN(num)) {
+                            this.result = decimalToFraction(num);
+                        }
+                    }
+                } else {
+                    fmtBtn.classList.remove('active-fmt');
+                    // 恢复小数显示
+                    if (this.result !== 'Error' && this.result !== '0') {
+                        if (typeof this.lastResult === 'number') {
+                            // 限制小数位数
+                            if (Number.isInteger(this.lastResult)) {
+                                this.result = this.lastResult.toString();
+                            } else {
+                                const rounded = parseFloat(this.lastResult.toFixed(MAX_DECIMAL_PLACES));
+                                // 移除末尾的0
+                                this.result = rounded.toString().replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+                            }
+                        }
+                    }
+                }
+                
+                this.updateDisplay();
             }
             
             handleShiftInput(value) {
@@ -343,17 +436,6 @@
                 }
             }
 
-            toggleAlpha() {
-                this.alphaActive = !this.alphaActive;
-                const alphaBtn = document.getElementById('alpha');
-                
-                if (this.alphaActive) {
-                    alphaBtn.classList.add('active-alpha');
-                } else {
-                    alphaBtn.classList.remove('active-alpha');
-                }
-            }
-            
             handleAlphaInput(value) {
                 if (this.alphaActive) {
                     this.toggleAlpha(); // 输入后关闭alpha模式
@@ -416,8 +498,14 @@
                     this.toggleShift();
                 });
 
-                document.getElementById('alpha').addEventListener('click', () => {
+                // Alpha按钮
+                document.getElementById('alp').addEventListener('click', () => {
                     this.toggleAlpha();
+                });
+                
+                // FMT按钮 - 切换分数/小数模式
+                document.getElementById('fmt').addEventListener('click', () => {
+                    this.toggleFractionMode();
                 });
                 
                 // Ans按钮
@@ -452,11 +540,6 @@
                 document.getElementById('ctl').addEventListener('click', () => {
                     // CTL功能，这里只是示例
                     alert('CTL功能');
-                });
-                
-                document.getElementById('fmt').addEventListener('click', () => {
-                    // FMT功能，这里只是示例
-                    alert('格式功能');
                 });
             }
         }
