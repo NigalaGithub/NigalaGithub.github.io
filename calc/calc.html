@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCfx-100 科学计算器</title>
+    <title>NiTech TCalcfx-100 科学计算器</title>
     <style>
         * {
             margin: 0;
@@ -171,6 +171,8 @@
             font-size: 1.5rem;
             color: #0066cc;
             justify-content: center;
+            background: transparent;
+            box-shadow: none;
         }
         
         .catalog-mode .result {
@@ -178,6 +180,8 @@
             color: #ff6600;
             justify-content: center;
             font-weight: bold;
+            background: transparent;
+            box-shadow: none;
         }
         
         @media (max-width: 600px) {
@@ -341,6 +345,9 @@
             
             startCursorBlink() {
                 setInterval(() => {
+                    // 目录模式下不闪烁光标
+                    if (this.catalogActive) return;
+                    
                     this.cursorVisible = !this.cursorVisible;
                     this.updateDisplay();
                 }, 500);
@@ -782,6 +789,12 @@
             }
             
             updateDisplay() {
+                // 如果是目录模式，只显示目录内容
+                if (this.catalogActive) {
+                    this.updateCatalogDisplay();
+                    return;
+                }
+                
                 // 更新表达式显示，包括光标
                 let displayExpression = this.expression;
                 
