@@ -1,1 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可配置在线计算器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upload-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .upload-section h2 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .file-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: block;
+            padding: 12px 20px;
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .file-input-button:hover {
+            background: #1a68e8;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .calculator {
+            background: #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .display-container {
+            margin-bottom: 20px;
+        }
+        
+        .pixel-display {
+            background: #1a252f;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+            color: #00ff41;
+            text-align: right;
+            font-size: 24px;
+            word-wrap: break-word;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .display-label {
+            color: #ecf0f1;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+        }
+        
+        .calc-button {
+            background: #34495e;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 18px;
+            padding: 15px 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .calc-button:hover {
+            background: #3d566e;
+            transform: translateY(-2px);
+        }
+        
+        .calc-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .calc-button.operator {
+            background: #3498db;
+        }
+        
+        .calc-button.function {
+            background: #9b59b6;
+        }
+        
+        .calc-button.equals {
+            background: #2ecc71;
+        }
+        
+        .calc-button.clear {
+            background: #e74c3c;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .instructions pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .instructions code {
+            background: #f1f3f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #219653;
+        }
+    </style>
+</head>
+<body>
+    <h1>可配置在线计算器</h1>
+    
+    <div class="container">
+        <div class="upload-section">
+            <h2>上传配置文件</h2>
+            <div class="file-input-container">
+                <div class="file-input-wrapper">
+                    <button class="file-input-button">选择JSON配置文件</button>
+                    <input type="file" id="jsonFile" accept=".json">
+                </div>
+                <div class="file-name" id="fileName">未选择文件</div>
+            </div>
+            <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                或 <a href="#" id="useDefault">使用默认配置</a>
+            </p>
+        </div>
+        
+        <div class="calculator">
+            <div class="display-container">
+                <div class="display-label">显示屏</div>
+                <div class="pixel-display" id="display">0</div>
+            </div>
+            
+            <div class="buttons-grid" id="buttonsContainer">
+                <!-- 按钮将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="status" id="statusMessage"></div>
+        </div>
+        
+        <div class="instructions">
+            <h2>JSON配置文件说明</h2>
+            <p>配置文件需要包含以下结构：</p>
+            <pre><code>{
+  "display": {
+    "width": 16,    // 显示屏宽度（字符数）
+    "height": 2     // 显示屏高度（行数）
+  },
+  "buttons": [      // 30个按钮的配置（5列×6行）
+    {
+      "row": 0,     // 行索引（0-5）
+      "col": 0,     // 列索引（0-4）
+      "label": "7", // 按钮显示文本
+      "type": "digit", // 按钮类型：digit, operator, function, clear, equals
+      "action": "7" // 按钮动作（数字、运算符或函数名）
+    },
+    // ... 其他按钮配置
+  ]
+}</code></pre>
+            <p>下载示例配置文件：<a href="#" class="download-btn" id="downloadExample">示例JSON文件</a></p>
+        </div>
+    </div>
 
+    <script>
+        // 默认配置
+        const defaultConfig = {
+            "display": {
+                "width": 16,
+                "height": 2
+            },
+            "buttons": [
+                // 第一行
+                { "row": 0, "col": 0, "label": "MC", "type": "function", "action": "memoryClear" },
+                { "row": 0, "col": 1, "label": "MR", "type": "function", "action": "memoryRecall" },
+                { "row": 0, "col": 2, "label": "M+", "type": "function", "action": "memoryAdd" },
+                { "row": 0, "col": 3, "label": "M-", "type": "function", "action": "memorySubtract" },
+                { "row": 0, "col": 4, "label": "C", "type": "clear", "action": "clear" },
+                
+                // 第二行
+                { "row": 1, "col": 0, "label": "7", "type": "digit", "action": "7" },
+                { "row": 1, "col": 1, "label": "8", "type": "digit", "action": "8" },
+                { "row": 1, "col": 2, "label": "9", "type": "digit", "action": "9" },
+                { "row": 1, "col": 3, "label": "÷", "type": "operator", "action": "/" },
+                { "row": 1, "col": 4, "label": "√", "type": "function", "action": "sqrt" },
+                
+                // 第三行
+                { "row": 2, "col": 0, "label": "4", "type": "digit", "action": "4" },
+                { "row": 2, "col": 1, "label": "5", "type": "digit", "action": "5" },
+                { "row": 2, "col": 2, "label": "6", "type": "digit", "action": "6" },
+                { "row": 2, "col": 3, "label": "×", "type": "operator", "action": "*" },
+                { "row": 2, "col": 4, "label": "x²", "type": "function", "action": "square" },
+                
+                // 第四行
+                { "row": 3, "col": 0, "label": "1", "type": "digit", "action": "1" },
+                { "row": 3, "col": 1, "label": "2", "type": "digit", "action": "2" },
+                { "row": 3, "col": 2, "label": "3", "type": "digit", "action": "3" },
+                { "row": 3, "col": 3, "label": "-", "type": "operator", "action": "-" },
+                { "row": 3, "col": 4, "label": "1/x", "type": "function", "action": "reciprocal" },
+                
+                // 第五行
+                { "row": 4, "col": 0, "label": "0", "type": "digit", "action": "0" },
+                { "row": 4, "col": 1, "label": ".", "type": "digit", "action": "." },
+                { "row": 4, "col": 2, "label": "±", "type": "function", "action": "toggleSign" },
+                { "row": 4, "col": 3, "label": "+", "type": "operator", "action": "+" },
+                { "row": 4, "col": 4, "label": "=", "type": "equals", "action": "equals" },
+                
+                // 第六行
+                { "row": 5, "col": 0, "label": "sin", "type": "function", "action": "sin" },
+                { "row": 5, "col": 1, "label": "cos", "type": "function", "action": "cos" },
+                { "row": 5, "col": 2, "label": "tan", "type": "function", "action": "tan" },
+                { "row": 5, "col": 3, "label": "log", "type": "function", "action": "log" },
+                { "row": 5, "col": 4, "label": "ln", "type": "function", "action": "ln" }
+            ]
+        };
+
+        // 计算器状态
+        let calculatorState = {
+            currentInput: '0',
+            previousInput: '',
+            operator: null,
+            waitingForNewInput: false,
+            memory: 0,
+            displayText: '0'
+        };
+
+        // DOM元素
+        const jsonFileInput = document.getElementById('jsonFile');
+        const fileNameDisplay = document.getElementById('fileName');
+        const useDefaultLink = document.getElementById('useDefault');
+        const displayElement = document.getElementById('display');
+        const buttonsContainer = document.getElementById('buttonsContainer');
+        const statusMessage = document.getElementById('statusMessage');
+        const downloadExampleLink = document.getElementById('downloadExample');
+
+        // 事件监听器
+        jsonFileInput.addEventListener('change', handleFileUpload);
+        useDefaultLink.addEventListener('click', useDefaultConfig);
+        downloadExampleLink.addEventListener('click', downloadExampleConfig);
+
+        // 初始化使用默认配置
+        useDefaultConfig();
+
+        // 处理文件上传
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            fileNameDisplay.textContent = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    initializeCalculator(config);
+                    showStatus('配置文件加载成功！', 'success');
+                } catch (error) {
+                    showStatus('配置文件格式错误：' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 使用默认配置
+        function useDefaultConfig(e) {
+            if (e) e.preventDefault();
+            fileNameDisplay.textContent = '使用默认配置';
+            initializeCalculator(defaultConfig);
+            showStatus('已加载默认配置！', 'success');
+        }
+
+        // 下载示例配置文件
+        function downloadExampleConfig(e) {
+            e.preventDefault();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(defaultConfig, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "calculator-config.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // 初始化计算器
+        function initializeCalculator(config) {
+            // 验证配置
+            if (!validateConfig(config)) {
+                showStatus('配置文件格式错误，请检查配置结构。', 'error');
+                return;
+            }
+            
+            // 设置显示屏
+            setupDisplay(config.display);
+            
+            // 清空按钮容器
+            buttonsContainer.innerHTML = '';
+            
+            // 创建按钮网格
+            createButtonGrid(config.buttons);
+            
+            // 重置计算器状态
+            resetCalculator();
+        }
+
+        // 验证配置
+        function validateConfig(config) {
+            if (!config.display || !config.buttons) return false;
+            if (typeof config.display.width !== 'number' || typeof config.display.height !== 'number') return false;
+            if (!Array.isArray(config.buttons) || config.buttons.length !== 30) return false;
+            
+            // 检查每个按钮的配置
+            for (let button of config.buttons) {
+                if (typeof button.row !== 'number' || button.row < 0 || button.row > 5) return false;
+                if (typeof button.col !== 'number' || button.col < 0 || button.col > 4) return false;
+                if (!button.label || !button.type || !button.action) return false;
+            }
+            
+            return true;
+        }
+
+        // 设置显示屏
+        function setupDisplay(displayConfig) {
+            // 设置显示屏样式
+            displayElement.style.minHeight = `${displayConfig.height * 40}px`;
+            displayElement.style.fontSize = `${Math.min(24, 100 / displayConfig.width)}px`;
+        }
+
+        // 创建按钮网格
+        function createButtonGrid(buttonsConfig) {
+            // 创建5x6网格
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 5; col++) {
+                    // 查找对应位置的按钮配置
+                    const buttonConfig = buttonsConfig.find(b => b.row === row && b.col === col);
+                    
+                    if (buttonConfig) {
+                        const button = document.createElement('button');
+                        button.className = `calc-button ${buttonConfig.type}`;
+                        button.textContent = buttonConfig.label;
+                        button.dataset.type = buttonConfig.type;
+                        button.dataset.action = buttonConfig.action;
+                        
+                        button.addEventListener('click', () => handleButtonClick(buttonConfig));
+                        
+                        buttonsContainer.appendChild(button);
+                    }
+                }
+            }
+        }
+
+        // 处理按钮点击
+        function handleButtonClick(buttonConfig) {
+            const { type, action } = buttonConfig;
+            
+            switch (type) {
+                case 'digit':
+                    inputDigit(action);
+                    break;
+                case 'operator':
+                    inputOperator(action);
+                    break;
+                case 'function':
+                    executeFunction(action);
+                    break;
+                case 'clear':
+                    clear(action);
+                    break;
+                case 'equals':
+                    calculate();
+                    break;
+            }
+            
+            updateDisplay();
+        }
+
+        // 输入数字
+        function inputDigit(digit) {
+            if (calculatorState.waitingForNewInput) {
+                calculatorState.currentInput = digit;
+                calculatorState.waitingForNewInput = false;
+            } else {
+                calculatorState.currentInput = calculatorState.currentInput === '0' ? digit : calculatorState.currentInput + digit;
+            }
+        }
+
+        // 输入运算符
+        function inputOperator(op) {
+            if (calculatorState.operator && !calculatorState.waitingForNewInput) {
+                calculate();
+            }
+            
+            calculatorState.previousInput = calculatorState.currentInput;
+            calculatorState.operator = op;
+            calculatorState.waitingForNewInput = true;
+        }
+
+        // 执行函数
+        function executeFunction(func) {
+            let result;
+            const inputValue = parseFloat(calculatorState.currentInput);
+            
+            switch (func) {
+                case 'sqrt':
+                    result = Math.sqrt(inputValue);
+                    break;
+                case 'square':
+                    result = inputValue * inputValue;
+                    break;
+                case 'reciprocal':
+                    result = 1 / inputValue;
+                    break;
+                case 'toggleSign':
+                    result = -inputValue;
+                    break;
+                case 'sin':
+                    result = Math.sin(inputValue * Math.PI / 180); // 转换为弧度
+                    break;
+                case 'cos':
+                    result = Math.cos(inputValue * Math.PI / 180);
+                    break;
+                case 'tan':
+                    result = Math.tan(inputValue * Math.PI / 180);
+                    break;
+                case 'log':
+                    result = Math.log10(inputValue);
+                    break;
+                case 'ln':
+                    result = Math.log(inputValue);
+                    break;
+                case 'memoryClear':
+                    calculatorState.memory = 0;
+                    return;
+                case 'memoryRecall':
+                    calculatorState.currentInput = calculatorState.memory.toString();
+                    break;
+                case 'memoryAdd':
+                    calculatorState.memory += parseFloat(calculatorState.currentInput);
+                    return;
+                case 'memorySubtract':
+                    calculatorState.memory -= parseFloat(calculatorState.currentInput);
+                    return;
+                default:
+                    return;
+            }
+            
+            calculatorState.currentInput = result.toString();
+            calculatorState.waitingForNewInput = true;
+        }
+
+        // 清除
+        function clear(action) {
+            if (action === 'clear') {
+                calculatorState.currentInput = '0';
+                calculatorState.previousInput = '';
+                calculatorState.operator = null;
+                calculatorState.waitingForNewInput = false;
+            }
+        }
+
+        // 计算
+        function calculate() {
+            if (!calculatorState.operator || calculatorState.waitingForNewInput) return;
+            
+            const prev = parseFloat(calculatorState.previousInput);
+            const current = parseFloat(calculatorState.currentInput);
+            let result;
+            
+            switch (calculatorState.operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            calculatorState.currentInput = result.toString();
+            calculatorState.operator = null;
+            calculatorState.waitingForNewInput = true;
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            // 限制显示长度
+            let displayText = calculatorState.currentInput;
+            if (displayText.length > 16) {
+                displayText = parseFloat(displayText).toExponential(8);
+            }
+            
+            displayElement.textContent = displayText;
+        }
+
+        // 重置计算器
+        function resetCalculator() {
+            calculatorState = {
+                currentInput: '0',
+                previousInput: '',
+                operator: null,
+                waitingForNewInput: false,
+                memory: 0,
+                displayText: '0'
+            };
+            updateDisplay();
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status ${type}`;
+            
+            // 3秒后清除状态消息
+            setTimeout(() => {
+                statusMessage.textContent = '';
+                statusMessage.className = 'status';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
