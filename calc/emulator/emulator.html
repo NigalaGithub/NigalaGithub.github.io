@@ -3,652 +3,1114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>可配置在线计算器</title>
+    <title>NiTech TCalcfx-100 科学计算器</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        @font-face {
+            font-family: 'ClassWiz';
+            src: url('ClassWizXDisplay-Regular.ttf');
         }
         
         body {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            font-family: 'ClassWiz', Arial, sans-serif;
             padding: 20px;
-            color: #333;
         }
         
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .upload-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .upload-section h2 {
-            margin-bottom: 15px;
-            color: #2575fc;
-        }
-        
-        .file-input-container {
+        .calculator-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-        }
-        
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
+            gap: 20px;
+            max-width: 500px;
             width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        
-        .file-input-button {
-            display: block;
-            padding: 12px 20px;
-            background: #2575fc;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .file-input-button:hover {
-            background: #1a68e8;
-        }
-        
-        .file-name {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .calculator {
-            background: #2c3e50;
-            border-radius: 10px;
+        .display-area {
+            background-color: #f0f0f0;
+            border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
-        .display-container {
-            margin-bottom: 20px;
-        }
-        
-        .pixel-display {
-            background: #1a252f;
-            border-radius: 5px;
-            padding: 15px;
-            min-height: 80px;
-            font-family: 'Courier New', monospace;
-            color: #00ff41;
-            text-align: right;
-            font-size: 24px;
-            word-wrap: break-word;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        .calculator-title {
+            text-align: center;
+            font-size: 1.5rem;
             margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
-        .display-label {
-            color: #ecf0f1;
-            font-size: 14px;
-            margin-bottom: 5px;
+        .expression {
+            font-size: 1.8rem;
+            color: #222;
+            min-height: 40px;
+            word-wrap: break-word;
+            text-align: left;
+            padding: 5px;
+            font-weight: 500;
+            background: #e8e8e8;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result {
+            font-size: 2.2rem;
+            color: #000;
+            text-align: right;
+            padding: 10px;
+            font-weight: 500;
+            background: #d8d8d8;
+            border-radius: 8px;
+            min-height: 70px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        .buttons-area {
+            background-color: #3a3a3a;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .buttons-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             grid-gap: 10px;
+            margin-bottom: 10px;
         }
         
-        .calc-button {
-            background: #34495e;
+        .btn {
+            padding: 15px 0;
             border: none;
-            border-radius: 5px;
-            color: white;
-            font-size: 18px;
-            padding: 15px 5px;
+            border-radius: 10px;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(to bottom, #4a4a4a, #2a2a2a);
+            color: #fff;
+            font-family: 'ClassWiz', Arial, sans-serif;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         
-        .calc-button:hover {
-            background: #3d566e;
+        .btn:hover {
+            background: linear-gradient(to bottom, #5a5a5a, #3a3a3a);
             transform: translateY(-2px);
         }
         
-        .calc-button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
         }
         
-        .calc-button.operator {
-            background: #3498db;
+        .number {
+            background: linear-gradient(to bottom, #5a5a5a, #3a3a3a);
         }
         
-        .calc-button.function {
-            background: #9b59b6;
+        .operator {
+            background: linear-gradient(to bottom, #ff9500, #e68500);
         }
         
-        .calc-button.equals {
-            background: #2ecc71;
+        .function {
+            background: linear-gradient(to bottom, #4a6fa5, #2a4f85);
         }
         
-        .calc-button.clear {
-            background: #e74c3c;
+        .equals {
+            background: linear-gradient(to bottom, #00c853, #009624);
         }
         
-        .status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
+        .clear {
+            background: linear-gradient(to bottom, #ff3b30, #d32f2f);
+        }
+        
+        .active-shift {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+        }
+
+        .active-alpha {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+        }
+
+        .active-fmt {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+        }
+
+        .active-ctl {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+        }
+
+        .active-equation {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            box-shadow: 0 0 15px rgba(155, 89, 182, 0.7);
+        }
+        
+        .catalog-mode .expression {
+            font-size: 1.5rem;
+            color: #0066cc;
+            justify-content: center;
+            background: transparent;
+            box-shadow: none;
+        }
+        
+        .catalog-mode .result {
+            font-size: 1.8rem;
+            color: #ff6600;
+            justify-content: center;
             font-weight: bold;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .equation-mode .expression {
+            font-size: 1.5rem;
+            color: #0066cc;
+            background: transparent;
+            box-shadow: none;
         }
         
-        .status.success {
-            background: #d4edda;
-            color: #155724;
+        .equation-mode .result {
+            font-size: 1.8rem;
+            color: #ff6600;
+            justify-content: center;
+            font-weight: bold;
+            background: transparent;
+            box-shadow: none;
         }
         
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .instructions {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .instructions h2 {
-            margin-bottom: 15px;
-            color: #2575fc;
-        }
-        
-        .instructions pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        
-        .instructions code {
-            background: #f1f3f4;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-        
-        .download-btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: #27ae60;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        .download-btn:hover {
-            background: #219653;
+        @media (max-width: 600px) {
+            .calculator-container {
+                max-width: 100%;
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 12px 0;
+                font-size: 1rem;
+            }
+            
+            .expression {
+                font-size: 1.5rem;
+            }
+            
+            .result {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>可配置在线计算器</h1>
-    
-    <div class="container">
-        <div class="upload-section">
-            <h2>上传配置文件</h2>
-            <div class="file-input-container">
-                <div class="file-input-wrapper">
-                    <button class="file-input-button">选择JSON配置文件</button>
-                    <input type="file" id="jsonFile" accept=".json">
-                </div>
-                <div class="file-name" id="fileName">未选择文件</div>
-            </div>
-            <p style="margin-top: 10px; font-size: 14px; color: #666;">
-                或 <a href="#" id="useDefault">使用默认配置</a>
-            </p>
+    <div class="calculator-container">
+        <div class="display-area">
+            <div class="calculator-title">NiTech TCalcfx-100</div>
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
         </div>
         
-        <div class="calculator">
-            <div class="display-container">
-                <div class="display-label">显示屏</div>
-                <div class="pixel-display" id="display">0</div>
+        <div class="buttons-area">
+            <!-- 第一行 -->
+            <div class="buttons-grid">
+                <button class="btn function" id="pwr">PWR</button>
+                <button class="btn function" id="shift">SFT</button>
+                <button class="btn function" id="alp">ALP</button>
+                <button class="btn function" id="ctl">CTL</button>
             </div>
             
-            <div class="buttons-grid" id="buttonsContainer">
-                <!-- 按钮将通过JavaScript动态生成 -->
+            <!-- 第二行（第一部分） -->
+            <div class="buttons-grid">
+                <button class="btn function" data-value="A">A</button>
+                <button class="btn function" data-value="B">B</button>
+                <button class="btn function" data-value="C">C</button>
+                <button class="btn function" data-value="D">D</button>
             </div>
             
-            <div class="status" id="statusMessage"></div>
-        </div>
-        
-        <div class="instructions">
-            <h2>JSON配置文件说明</h2>
-            <p>配置文件需要包含以下结构：</p>
-            <pre><code>{
-  "display": {
-    "width": 16,    // 显示屏宽度（字符数）
-    "height": 2     // 显示屏高度（行数）
-  },
-  "buttons": [      // 30个按钮的配置（5列×6行）
-    {
-      "row": 0,     // 行索引（0-5）
-      "col": 0,     // 列索引（0-4）
-      "label": "7", // 按钮显示文本
-      "type": "digit", // 按钮类型：digit, operator, function, clear, equals
-      "action": "7" // 按钮动作（数字、运算符或函数名）
-    },
-    // ... 其他按钮配置
-  ]
-}</code></pre>
-            <p>下载示例配置文件：<a href="#" class="download-btn" id="downloadExample">示例JSON文件</a></p>
+            <!-- 第二行（第二部分） -->
+            <div class="buttons-grid">
+                <button class="btn function" data-value="X">X</button>
+                <button class="btn function" data-value="Y">Y</button>
+                <button class="btn function" data-value="Z">Z</button>
+                <button class="btn function" data-value="T">T</button>
+            </div>
+            
+            <!-- 第三行 -->
+            <div class="buttons-grid">
+                <button class="btn function" data-value="(">(</button>
+                <button class="btn function" data-value=")">)</button>
+                <button class="btn function" data-value=",">,</button>
+                <button class="btn function" data-value=".">.</button>
+            </div>
+            
+            <!-- 第四行 -->
+            <div class="buttons-grid">
+                <button class="btn function" id="left-arrow">RESET</button>
+                <button class="btn function" id="right-arrow">→</button>
+                <button class="btn function" id="cursor-left"><</button>
+                <button class="btn function" id="cursor-right">></button>
+            </div>
+            
+            <!-- 第五行 -->
+            <div class="buttons-grid">
+                <button class="btn number" data-value="1">1</button>
+                <button class="btn number" data-value="2">2</button>
+                <button class="btn number" data-value="3">3</button>
+                <button class="btn operator" data-value="×">×</button>
+            </div>
+            
+            <!-- 第六行 -->
+            <div class="buttons-grid">
+                <button class="btn number" data-value="4">4</button>
+                <button class="btn number" data-value="5">5</button>
+                <button class="btn number" data-value="6">6</button>
+                <button class="btn operator" data-value="÷">÷</button>
+            </div>
+            
+            <!-- 第七行 -->
+            <div class="buttons-grid">
+                <button class="btn number" data-value="7">7</button>
+                <button class="btn number" data-value="8">8</button>
+                <button class="btn number" data-value="9">9</button>
+                <button class="btn operator" data-value="+">+</button>
+            </div>
+            
+            <!-- 第八行 -->
+            <div class="buttons-grid">
+                <button class="btn equals" id="execute">EXE</button>
+                <button class="btn number" data-value="0">0</button>
+                <button class="btn function" id="fmt">FMT</button>
+                <button class="btn operator" data-value="-">-</button>
+            </div>
+            
+            <!-- 第九行 -->
+            <div class="buttons-grid">
+                <button class="btn function" id="ans">Ans</button>
+                <button class="btn function" id="percent">%</button>
+                <button class="btn function" id="delete">DEL</button>
+                <button class="btn clear" id="clear">AC</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 默认配置
-        const defaultConfig = {
-            "display": {
-                "width": 16,
-                "height": 2
-            },
-            "buttons": [
-                // 第一行
-                { "row": 0, "col": 0, "label": "MC", "type": "function", "action": "memoryClear" },
-                { "row": 0, "col": 1, "label": "MR", "type": "function", "action": "memoryRecall" },
-                { "row": 0, "col": 2, "label": "M+", "type": "function", "action": "memoryAdd" },
-                { "row": 0, "col": 3, "label": "M-", "type": "function", "action": "memorySubtract" },
-                { "row": 0, "col": 4, "label": "C", "type": "clear", "action": "clear" },
+        // 最大小数位数
+        const MAX_DECIMAL_PLACES = 12;
+        
+        // 目录项定义
+        const catalogItems = [
+            { id: 1, name: "∑(", value: "∑(", description: "求和函数" },
+            { id: 2, name: "∏(", value: "∏(", description: "求积函数" },
+            { id: 3, name: "sin(", value: "sin(", description: "正弦函数" },
+            { id: 4, name: "cos(", value: "cos(", description: "余弦函数" },
+            { id: 5, name: "tan(", value: "tan(", description: "正切函数" },
+            { id: 6, name: "sinh(", value: "sinh(", description: "双曲正弦" },
+            { id: 7, name: "cosh(", value: "cosh(", description: "双曲余弦" },
+            { id: 8, name: "tanh(", value: "tanh(", description: "双曲正切" },
+            { id: 9, name: "sin⁻¹(", value: "sin⁻¹(", description: "反正弦函数" },
+            { id: 10, name: "cos⁻¹(", value: "cos⁻¹(", description: "反余弦函数" },
+            { id: 11, name: "tan⁻¹(", value: "tan⁻¹(", description: "反正切函数" },
+            { id: 12, name: "sinh⁻¹(", value: "sinh⁻¹(", description: "反双曲正弦" },
+            { id: 13, name: "cosh⁻¹(", value: "cosh⁻¹(", description: "反双曲余弦" },
+            { id: 14, name: "tanh⁻¹(", value: "tanh⁻¹(", description: "反双曲正切" },
+            { id: 15, name: "∫(", value: "∫(", description: "积分函数" }
+        ];
+
+        class Calculator {
+            constructor() {
+                this.expressionElement = document.getElementById('expression');
+                this.resultElement = document.getElementById('result');
+                this.shiftActive = false;
+                this.alphaActive = false;
+                this.fractionMode = false;
+                this.catalogActive = false;
+                this.equationMode = false;
+                this.catalogIndex = 0;
+                this.solutionIndex = 0;
+                this.solutions = [];
+                this.cursorPosition = 0;
+                this.cursorVisible = true;
+                this.lastResult = 0;
+                this.expression = '';
+                this.result = '0';
+                this.variables = {
+                    'A': 0, 'B': 0, 'C': 0, 'D': 0,
+                    'X': 0, 'Y': 0, 'Z': 0, 'T': 0
+                };
                 
-                // 第二行
-                { "row": 1, "col": 0, "label": "7", "type": "digit", "action": "7" },
-                { "row": 1, "col": 1, "label": "8", "type": "digit", "action": "8" },
-                { "row": 1, "col": 2, "label": "9", "type": "digit", "action": "9" },
-                { "row": 1, "col": 3, "label": "÷", "type": "operator", "action": "/" },
-                { "row": 1, "col": 4, "label": "√", "type": "function", "action": "sqrt" },
-                
-                // 第三行
-                { "row": 2, "col": 0, "label": "4", "type": "digit", "action": "4" },
-                { "row": 2, "col": 1, "label": "5", "type": "digit", "action": "5" },
-                { "row": 2, "col": 2, "label": "6", "type": "digit", "action": "6" },
-                { "row": 2, "col": 3, "label": "×", "type": "operator", "action": "*" },
-                { "row": 2, "col": 4, "label": "x²", "type": "function", "action": "square" },
-                
-                // 第四行
-                { "row": 3, "col": 0, "label": "1", "type": "digit", "action": "1" },
-                { "row": 3, "col": 1, "label": "2", "type": "digit", "action": "2" },
-                { "row": 3, "col": 2, "label": "3", "type": "digit", "action": "3" },
-                { "row": 3, "col": 3, "label": "-", "type": "operator", "action": "-" },
-                { "row": 3, "col": 4, "label": "1/x", "type": "function", "action": "reciprocal" },
-                
-                // 第五行
-                { "row": 4, "col": 0, "label": "0", "type": "digit", "action": "0" },
-                { "row": 4, "col": 1, "label": ".", "type": "digit", "action": "." },
-                { "row": 4, "col": 2, "label": "±", "type": "function", "action": "toggleSign" },
-                { "row": 4, "col": 3, "label": "+", "type": "operator", "action": "+" },
-                { "row": 4, "col": 4, "label": "=", "type": "equals", "action": "equals" },
-                
-                // 第六行
-                { "row": 5, "col": 0, "label": "sin", "type": "function", "action": "sin" },
-                { "row": 5, "col": 1, "label": "cos", "type": "function", "action": "cos" },
-                { "row": 5, "col": 2, "label": "tan", "type": "function", "action": "tan" },
-                { "row": 5, "col": 3, "label": "log", "type": "function", "action": "log" },
-                { "row": 5, "col": 4, "label": "ln", "type": "function", "action": "ln" }
-            ]
-        };
-
-        // 计算器状态
-        let calculatorState = {
-            currentInput: '0',
-            previousInput: '',
-            operator: null,
-            waitingForNewInput: false,
-            memory: 0,
-            displayText: '0'
-        };
-
-        // DOM元素
-        const jsonFileInput = document.getElementById('jsonFile');
-        const fileNameDisplay = document.getElementById('fileName');
-        const useDefaultLink = document.getElementById('useDefault');
-        const displayElement = document.getElementById('display');
-        const buttonsContainer = document.getElementById('buttonsContainer');
-        const statusMessage = document.getElementById('statusMessage');
-        const downloadExampleLink = document.getElementById('downloadExample');
-
-        // 事件监听器
-        jsonFileInput.addEventListener('change', handleFileUpload);
-        useDefaultLink.addEventListener('click', useDefaultConfig);
-        downloadExampleLink.addEventListener('click', downloadExampleConfig);
-
-        // 初始化使用默认配置
-        useDefaultConfig();
-
-        // 处理文件上传
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            fileNameDisplay.textContent = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const config = JSON.parse(e.target.result);
-                    initializeCalculator(config);
-                    showStatus('配置文件加载成功！', 'success');
-                } catch (error) {
-                    showStatus('配置文件格式错误：' + error.message, 'error');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // 使用默认配置
-        function useDefaultConfig(e) {
-            if (e) e.preventDefault();
-            fileNameDisplay.textContent = '使用默认配置';
-            initializeCalculator(defaultConfig);
-            showStatus('已加载默认配置！', 'success');
-        }
-
-        // 下载示例配置文件
-        function downloadExampleConfig(e) {
-            e.preventDefault();
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(defaultConfig, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "calculator-config.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
-
-        // 初始化计算器
-        function initializeCalculator(config) {
-            // 验证配置
-            if (!validateConfig(config)) {
-                showStatus('配置文件格式错误，请检查配置结构。', 'error');
-                return;
+                this.updateDisplay();
+                this.setupEventListeners();
+                this.startCursorBlink();
             }
             
-            // 设置显示屏
-            setupDisplay(config.display);
-            
-            // 清空按钮容器
-            buttonsContainer.innerHTML = '';
-            
-            // 创建按钮网格
-            createButtonGrid(config.buttons);
-            
-            // 重置计算器状态
-            resetCalculator();
-        }
-
-        // 验证配置
-        function validateConfig(config) {
-            if (!config.display || !config.buttons) return false;
-            if (typeof config.display.width !== 'number' || typeof config.display.height !== 'number') return false;
-            if (!Array.isArray(config.buttons) || config.buttons.length !== 30) return false;
-            
-            // 检查每个按钮的配置
-            for (let button of config.buttons) {
-                if (typeof button.row !== 'number' || button.row < 0 || button.row > 5) return false;
-                if (typeof button.col !== 'number' || button.col < 0 || button.col > 4) return false;
-                if (!button.label || !button.type || !button.action) return false;
-            }
-            
-            return true;
-        }
-
-        // 设置显示屏
-        function setupDisplay(displayConfig) {
-            // 设置显示屏样式
-            displayElement.style.minHeight = `${displayConfig.height * 40}px`;
-            displayElement.style.fontSize = `${Math.min(24, 100 / displayConfig.width)}px`;
-        }
-
-        // 创建按钮网格
-        function createButtonGrid(buttonsConfig) {
-            // 创建5x6网格
-            for (let row = 0; row < 6; row++) {
-                for (let col = 0; col < 5; col++) {
-                    // 查找对应位置的按钮配置
-                    const buttonConfig = buttonsConfig.find(b => b.row === row && b.col === col);
+            startCursorBlink() {
+                setInterval(() => {
+                    // 目录或方程模式下不闪烁光标
+                    if (this.catalogActive || this.equationMode) return;
                     
-                    if (buttonConfig) {
-                        const button = document.createElement('button');
-                        button.className = `calc-button ${buttonConfig.type}`;
-                        button.textContent = buttonConfig.label;
-                        button.dataset.type = buttonConfig.type;
-                        button.dataset.action = buttonConfig.action;
+                    this.cursorVisible = !this.cursorVisible;
+                    this.updateDisplay();
+                }, 500);
+            }
+            
+            clear() {
+                this.expression = '';
+                this.result = '0';
+                this.cursorPosition = 0;
+                this.updateDisplay();
+            }
+            
+            resetVariables() {
+                for (let key in this.variables) {
+                    this.variables[key] = 0;
+                }
+                this.result = "Variables reset";
+                this.updateDisplay();
+                
+                setTimeout(() => {
+                    this.result = '0';
+                    this.updateDisplay();
+                }, 2000);
+            }
+            
+            deleteAtCursor() {
+                if (this.cursorPosition > 0) {
+                    this.expression = this.expression.slice(0, this.cursorPosition - 1) + 
+                                     this.expression.slice(this.cursorPosition);
+                    this.cursorPosition--;
+                    this.updateDisplay();
+                }
+            }
+            
+            insertAtCursor(value) {
+                this.expression = this.expression.slice(0, this.cursorPosition) + 
+                                 value + 
+                                 this.expression.slice(this.cursorPosition);
+                this.cursorPosition += value.length;
+                this.updateDisplay();
+            }
+            
+            moveCursorLeft() {
+                if (this.catalogActive) {
+                    this.moveCatalogLeft();
+                } else if (this.equationMode && this.solutions.length > 0) {
+                    this.moveSolutionLeft();
+                } else if (this.cursorPosition > 0) {
+                    this.cursorPosition--;
+                    this.updateDisplay();
+                }
+            }
+            
+            moveCursorRight() {
+                if (this.catalogActive) {
+                    this.moveCatalogRight();
+                } else if (this.equationMode && this.solutions.length > 0) {
+                    this.moveSolutionRight();
+                } else if (this.cursorPosition < this.expression.length) {
+                    this.cursorPosition++;
+                    this.updateDisplay();
+                }
+            }
+            
+            // 求和函数 ∑(end,start,expr)
+            summation(expr, start, end) {
+                let sum = 0;
+                for (let i = start; i <= end; i++) {
+                    // 替换表达式中的变量
+                    let replacedExpr = expr.replace(/x/gi, i);
+                    try {
+                        const calcFunction = new Function('return ' + replacedExpr);
+                        sum += calcFunction();
+                    } catch (error) {
+                        return "Error";
+                    }
+                }
+                return sum;
+            }
+            
+            // 求积函数 ∏(end,start,expr)
+            product(expr, start, end) {
+                let prod = 1;
+                for (let i = start; i <= end; i++) {
+                    // 替换表达式中的变量
+                    let replacedExpr = expr.replace(/x/gi, i);
+                    try {
+                        const calcFunction = new Function('return ' + replacedExpr);
+                        prod *= calcFunction();
+                    } catch (error) {
+                        return "Error";
+                    }
+                }
+                return prod;
+            }
+            
+            // 积分函数 ∫(end,start,expr)
+            integrate(expr, start, end) {
+                // 使用辛普森法进行数值积分
+                const n = 1000; // 分割数
+                const h = (end - start) / n;
+                let sum = 0;
+                
+                for (let i = 0; i <= n; i++) {
+                    const x = start + i * h;
+                    // 替换表达式中的变量
+                    let replacedExpr = expr.replace(/x/gi, x);
+                    
+                    try {
+                        const calcFunction = new Function('return ' + replacedExpr);
+                        const fx = calcFunction();
                         
-                        button.addEventListener('click', () => handleButtonClick(buttonConfig));
-                        
-                        buttonsContainer.appendChild(button);
+                        if (i === 0 || i === n) {
+                            sum += fx;
+                        } else if (i % 2 === 1) {
+                            sum += 4 * fx;
+                        } else {
+                            sum += 2 * fx;
+                        }
+                    } catch (error) {
+                        return "Error";
+                    }
+                }
+                
+                return sum * h / 3;
+            }
+            
+            // 方程求解函数
+            solveEquation(equation) {
+                // 简单实现一次和二次方程求解
+                // 一次方程: ax + b = 0
+                // 二次方程: ax^2 + bx + c = 0
+                
+                // 清理方程字符串
+                equation = equation.replace(/\s/g, '');
+                
+                // 尝试匹配一次方程 ax + b = 0
+                const linearMatch = equation.match(/([-+]?\d*\.?\d*)x\s*([-+]\s*\d*\.?\d*)?\s*=\s*0/);
+                if (linearMatch) {
+                    const a = linearMatch[1] ? parseFloat(linearMatch[1]) : 1;
+                    const b = linearMatch[2] ? parseFloat(linearMatch[2].replace(/\s/g, '')) : 0;
+                    
+                    if (a === 0) {
+                        return b === 0 ? ["无穷多解"] : ["无解"];
+                    }
+                    
+                    return [(-b / a).toString()];
+                }
+                
+                // 尝试匹配二次方程 ax^2 + bx + c = 0
+                const quadraticMatch = equation.match(/([-+]?\d*\.?\d*)x\^2\s*([-+]\s*\d*\.?\d*)x\s*([-+]\s*\d*\.?\d*)?\s*=\s*0/);
+                if (quadraticMatch) {
+                    const a = quadraticMatch[1] ? parseFloat(quadraticMatch[1]) : 1;
+                    const b = quadraticMatch[2] ? parseFloat(quadraticMatch[2].replace(/\s/g, '')) : 0;
+                    const c = quadraticMatch[3] ? parseFloat(quadraticMatch[3].replace(/\s/g, '')) : 0;
+                    
+                    if (a === 0) {
+                        // 退化为一次方程
+                        if (b === 0) {
+                            return c === 0 ? ["无穷多解"] : ["无解"];
+                        }
+                        return [(-c / b).toString()];
+                    }
+                    
+                    const discriminant = b * b - 4 * a * c;
+                    
+                    if (discriminant < 0) {
+                        const realPart = -b / (2 * a);
+                        const imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
+                        return [
+                            `${realPart} + ${imaginaryPart}i`,
+                            `${realPart} - ${imaginaryPart}i`
+                        ];
+                    } else if (discriminant === 0) {
+                        return [(-b / (2 * a)).toString()];
+                    } else {
+                        const sqrtDiscriminant = Math.sqrt(discriminant);
+                        return [
+                            ((-b + sqrtDiscriminant) / (2 * a)).toString(),
+                            ((-b - sqrtDiscriminant) / (2 * a)).toString()
+                        ];
+                    }
+                }
+                
+                // 如果无法识别方程格式
+                return ["无解"];
+            }
+            
+            executeCalculation() {
+                try {
+                    // 方程模式下求解方程
+                    if (this.equationMode) {
+                        this.solutions = this.solveEquation(this.expression);
+                        this.solutionIndex = 0;
+                        this.updateEquationDisplay();
+                        return;
+                    }
+                    
+                    // 处理特殊函数
+                    let processedExpression = this.expression;
+                    
+                    // 处理求和函数 ∑(end,start,expr)
+                    processedExpression = processedExpression.replace(/∑\((\d+),(\d+),(.*?)\)/g, 
+                        (match, end, start, expr) => this.summation(expr, parseInt(start), parseInt(end)));
+                    
+                    // 处理求积函数 ∏(end,start,expr)
+                    processedExpression = processedExpression.replace(/∏\((\d+),(\d+),(.*?)\)/g, 
+                        (match, end, start, expr) => this.product(expr, parseInt(start), parseInt(end)));
+                    
+                    // 处理积分函数 ∫(end,start,expr)
+                    processedExpression = processedExpression.replace(/∫\((\d+),(\d+),(.*?)\)/g, 
+                        (match, end, start, expr) => this.integrate(expr, parseFloat(start), parseFloat(end)));
+                    
+                    // 替换符号为标准运算符
+                    let expressionToEval = processedExpression
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/\^/g, '**')
+                        .replace(/𝜋/g, Math.PI)
+                        .replace(/e/g, Math.E)
+                        .replace(/𝒊/g, 'i')
+                        .replace(/sin\(/g, 'Math.sin(')
+                        .replace(/cos\(/g, 'Math.cos(')
+                        .replace(/tan\(/g, 'Math.tan(')
+                        .replace(/sinh\(/g, 'Math.sinh(')
+                        .replace(/cosh\(/g, 'Math.cosh(')
+                        .replace(/tanh\(/g, 'Math.tanh(')
+                        .replace(/sin⁻¹\(/g, 'Math.asin(')
+                        .replace(/cos⁻¹\(/g, 'Math.acos(')
+                        .replace(/tan⁻¹\(/g, 'Math.atan(')
+                        .replace(/sinh⁻¹\(/g, 'Math.asinh(')
+                        .replace(/cosh⁻¹\(/g, 'Math.acosh(')
+                        .replace(/tanh⁻¹\(/g, 'Math.atanh(')
+                        .replace(/√\(/g, 'Math.sqrt(');
+                    
+                    // 替换变量值为实际值
+                    for (let key in this.variables) {
+                        const regex = new RegExp(key, 'g');
+                        expressionToEval = expressionToEval.replace(regex, this.variables[key]);
+                    }
+                    
+                    // 使用Function构造函数避免直接使用eval
+                    const calcFunction = new Function('return ' + expressionToEval);
+                    let rawResult = calcFunction();
+                    
+                    // 处理虚数结果
+                    if (typeof rawResult === 'string' && rawResult.includes('i')) {
+                        this.result = rawResult;
+                    } else if (typeof rawResult === 'number') {
+                        // 检查是否为整数
+                        if (Number.isInteger(rawResult)) {
+                            this.result = rawResult.toString();
+                        } else {
+                            // 限制小数位数
+                            const rounded = parseFloat(rawResult.toFixed(MAX_DECIMAL_PLACES));
+                            // 移除末尾的0
+                            this.result = rounded.toString().replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+                        }
+                        this.lastResult = rawResult;
+                    } else {
+                        this.result = rawResult.toString();
+                    }
+                    
+                    // 更新显示
+                    this.updateDisplay();
+                } catch (error) {
+                    this.result = 'Error';
+                    this.updateDisplay();
+                    
+                    // 2秒后恢复
+                    setTimeout(() => {
+                        this.result = '0';
+                        this.updateDisplay();
+                    }, 2000);
+                }
+            }
+            
+            assignVariable() {
+                try {
+                    // 查找→符号
+                    const arrowIndex = this.expression.indexOf('→');
+                    if (arrowIndex === -1) {
+                        this.result = "No assignment found";
+                        this.updateDisplay();
+                        return;
+                    }
+                    
+                    // 提取变量名和值
+                    const variableName = this.expression.slice(arrowIndex + 1).trim();
+                    const valueExpr = this.expression.slice(0, arrowIndex);
+                    
+                    // 检查变量名是否有效
+                    if (!this.variables.hasOwnProperty(variableName)) {
+                        this.result = "Invalid variable";
+                        this.updateDisplay();
+                        return;
+                    }
+                    
+                    // 计算值
+                    let valueToEval = valueExpr
+                        .replace(/×/g, '*')
+                        .replace(/÷/g, '/')
+                        .replace(/\^/g, '**')
+                        .replace(/𝜋/g, Math.PI)
+                        .replace(/e/g, Math.E)
+                        .replace(/𝒊/g, 'i');
+                    
+                    // 替换变量值为实际值
+                    for (let key in this.variables) {
+                        const regex = new RegExp(key, 'g');
+                        valueToEval = valueToEval.replace(regex, this.variables[key]);
+                    }
+                    
+                    const calcFunction = new Function('return ' + valueToEval);
+                    const value = calcFunction();
+                    
+                    // 赋值给变量
+                    this.variables[variableName] = value;
+                    this.result = `${variableName} = ${value}`;
+                    this.expression = '';
+                    this.cursorPosition = 0;
+                    
+                    this.updateDisplay();
+                } catch (error) {
+                    this.result = 'Assignment error';
+                    this.updateDisplay();
+                    
+                    setTimeout(() => {
+                        this.result = '0';
+                        this.updateDisplay();
+                    }, 2000);
+                }
+            }
+            
+            showCatalog() {
+                this.catalogActive = true;
+                this.catalogIndex = 0;
+                document.querySelector('.display-area').classList.add('catalog-mode');
+                this.updateCatalogDisplay();
+                
+                const ctlBtn = document.getElementById('ctl');
+                ctlBtn.classList.add('active-ctl');
+            }
+            
+            hideCatalog() {
+                this.catalogActive = false;
+                document.querySelector('.display-area').classList.remove('catalog-mode');
+                this.updateDisplay();
+                
+                const ctlBtn = document.getElementById('ctl');
+                ctlBtn.classList.remove('active-ctl');
+            }
+            
+            moveCatalogLeft() {
+                if (this.catalogActive) {
+                    this.catalogIndex = (this.catalogIndex - 1 + catalogItems.length) % catalogItems.length;
+                    this.updateCatalogDisplay();
+                }
+            }
+            
+            moveCatalogRight() {
+                if (this.catalogActive) {
+                    this.catalogIndex = (this.catalogIndex + 1) % catalogItems.length;
+                    this.updateCatalogDisplay();
+                }
+            }
+            
+            selectCatalogItem() {
+                if (this.catalogActive) {
+                    const selectedItem = catalogItems[this.catalogIndex];
+                    this.insertAtCursor(selectedItem.value);
+                    this.hideCatalog();
+                }
+            }
+            
+            updateCatalogDisplay() {
+                if (this.catalogActive) {
+                    const item = catalogItems[this.catalogIndex];
+                    this.expressionElement.textContent = `${item.id}. ${item.name} ${item.description}`;
+                    this.resultElement.textContent = "CATALOG";
+                }
+            }
+            
+            showEquationMode() {
+                this.equationMode = true;
+                this.expression = '';
+                this.cursorPosition = 0;
+                document.querySelector('.display-area').classList.add('equation-mode');
+                this.updateEquationDisplay();
+                
+                const ctlBtn = document.getElementById('ctl');
+                ctlBtn.classList.add('active-equation');
+            }
+            
+            hideEquationMode() {
+                this.equationMode = false;
+                document.querySelector('.display-area').classList.remove('equation-mode');
+                this.updateDisplay();
+                
+                const ctlBtn = document.getElementById('ctl');
+                ctlBtn.classList.remove('active-equation');
+            }
+            
+            moveSolutionLeft() {
+                if (this.equationMode && this.solutions.length > 0) {
+                    this.solutionIndex = (this.solutionIndex - 1 + this.solutions.length) % this.solutions.length;
+                    this.updateEquationDisplay();
+                }
+            }
+            
+            moveSolutionRight() {
+                if (this.equationMode && this.solutions.length > 0) {
+                    this.solutionIndex = (this.solutionIndex + 1) % this.solutions.length;
+                    this.updateEquationDisplay();
+                }
+            }
+            
+            updateEquationDisplay() {
+                if (this.equationMode) {
+                    if (this.solutions.length > 0) {
+                        this.expressionElement.textContent = this.expression;
+                        this.resultElement.textContent = `解 ${this.solutionIndex + 1}/${this.solutions.length}: ${this.solutions[this.solutionIndex]}`;
+                    } else {
+                        this.expressionElement.textContent = this.expression;
+                        this.resultElement.textContent = "输入方程并按EXE求解";
                     }
                 }
             }
-        }
-
-        // 处理按钮点击
-        function handleButtonClick(buttonConfig) {
-            const { type, action } = buttonConfig;
             
-            switch (type) {
-                case 'digit':
-                    inputDigit(action);
-                    break;
-                case 'operator':
-                    inputOperator(action);
-                    break;
-                case 'function':
-                    executeFunction(action);
-                    break;
-                case 'clear':
-                    clear(action);
-                    break;
-                case 'equals':
-                    calculate();
-                    break;
+            toggleShift() {
+                this.shiftActive = !this.shiftActive;
+                const shiftBtn = document.getElementById('shift');
+                
+                if (this.shiftActive) {
+                    shiftBtn.classList.add('active-shift');
+                } else {
+                    shiftBtn.classList.remove('active-shift');
+                }
+            }
+
+            toggleAlpha() {
+                this.alphaActive = !this.alphaActive;
+                const alphaBtn = document.getElementById('alp');
+                
+                if (this.alphaActive) {
+                    alphaBtn.classList.add('active-alpha');
+                } else {
+                    alphaBtn.classList.remove('active-alpha');
+                }
             }
             
-            updateDisplay();
-        }
-
-        // 输入数字
-        function inputDigit(digit) {
-            if (calculatorState.waitingForNewInput) {
-                calculatorState.currentInput = digit;
-                calculatorState.waitingForNewInput = false;
-            } else {
-                calculatorState.currentInput = calculatorState.currentInput === '0' ? digit : calculatorState.currentInput + digit;
-            }
-        }
-
-        // 输入运算符
-        function inputOperator(op) {
-            if (calculatorState.operator && !calculatorState.waitingForNewInput) {
-                calculate();
+            toggleFractionMode() {
+                this.fractionMode = !this.fractionMode;
+                const fmtBtn = document.getElementById('fmt');
+                
+                if (this.fractionMode) {
+                    fmtBtn.classList.add('active-fmt');
+                    // 转换为分数显示
+                    if (this.result !== 'Error' && this.result !== '0') {
+                        // 检查是否为虚数
+                        if (this.result.includes('i')) {
+                            this.result = "Cannot convert complex to fraction";
+                            setTimeout(() => {
+                                this.result = '0';
+                                this.updateDisplay();
+                            }, 2000);
+                        } else {
+                            const num = parseFloat(this.result);
+                            if (!isNaN(num)) {
+                                this.result = this.decimalToFraction(num);
+                            }
+                        }
+                    }
+                } else {
+                    fmtBtn.classList.remove('active-fmt');
+                    // 恢复小数显示
+                    if (this.result !== 'Error' && this.result !== '0') {
+                        if (typeof this.lastResult === 'number') {
+                            // 限制小数位数
+                            if (Number.isInteger(this.lastResult)) {
+                                this.result = this.lastResult.toString();
+                            } else {
+                                const rounded = parseFloat(this.lastResult.toFixed(MAX_DECIMAL_PLACES));
+                                // 移除末尾的0
+                                this.result = rounded.toString().replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+                            }
+                        }
+                    }
+                }
+                
+                this.updateDisplay();
             }
             
-            calculatorState.previousInput = calculatorState.currentInput;
-            calculatorState.operator = op;
-            calculatorState.waitingForNewInput = true;
-        }
-
-        // 执行函数
-        function executeFunction(func) {
-            let result;
-            const inputValue = parseFloat(calculatorState.currentInput);
+            decimalToFraction(decimal) {
+                if (decimal === 0) return "0";
+                
+                const tolerance = 1.0E-6;
+                let h1 = 1, h2 = 0;
+                let k1 = 0, k2 = 1;
+                let b = decimal;
+                do {
+                    const a = Math.floor(b);
+                    let aux = h1;
+                    h1 = a * h1 + h2;
+                    h2 = aux;
+                    aux = k1;
+                    k1 = a * k1 + k2;
+                    k2 = aux;
+                    b = 1 / (b - a);
+                } while (Math.abs(decimal - h1 / k1) > decimal * tolerance && !isNaN(b));
+                
+                // 格式化分数
+                if (k1 === 1) {
+                    return h1.toString();
+                } else {
+                    return h1 + "⌟" + k1;
+                }
+            }
             
-            switch (func) {
-                case 'sqrt':
-                    result = Math.sqrt(inputValue);
-                    break;
-                case 'square':
-                    result = inputValue * inputValue;
-                    break;
-                case 'reciprocal':
-                    result = 1 / inputValue;
-                    break;
-                case 'toggleSign':
-                    result = -inputValue;
-                    break;
-                case 'sin':
-                    result = Math.sin(inputValue * Math.PI / 180); // 转换为弧度
-                    break;
-                case 'cos':
-                    result = Math.cos(inputValue * Math.PI / 180);
-                    break;
-                case 'tan':
-                    result = Math.tan(inputValue * Math.PI / 180);
-                    break;
-                case 'log':
-                    result = Math.log10(inputValue);
-                    break;
-                case 'ln':
-                    result = Math.log(inputValue);
-                    break;
-                case 'memoryClear':
-                    calculatorState.memory = 0;
+            handleShiftInput(value) {
+                if (this.shiftActive) {
+                    switch(value) {
+                    case '1':
+                        this.insertAtCursor('𝜋');
+                        break;
+                    case '2':
+                        this.insertAtCursor('e');
+                        break;
+                    case '3':
+                        this.insertAtCursor('𝒊');
+                        break;
+                    case '4':
+                        this.insertAtCursor('sin(');
+                        break;
+                    case '5':
+                        this.insertAtCursor('cos(');
+                        break;
+                    case '6':
+                        this.insertAtCursor('tan(');
+                        break;
+                    case '7':
+                        this.insertAtCursor('√(');
+                        break;
+                    case '8':
+                        this.insertAtCursor('^');
+                        break;
+                    default:
+                        this.insertAtCursor(value);
+                    }
+                    this.toggleShift(); // 输入后关闭shift模式
+                } else {
+                    this.insertAtCursor(value);
+                }
+            }
+
+            handleAlphaInput(value) {
+                if (this.alphaActive) {
+                    this.toggleAlpha(); // 输入后关闭alpha模式
+                } else {
+                    this.insertAtCursor(value);
+                }
+            }
+            
+            updateDisplay() {
+                // 如果是目录模式或方程模式，只显示相应内容
+                if (this.catalogActive) {
+                    this.updateCatalogDisplay();
                     return;
-                case 'memoryRecall':
-                    calculatorState.currentInput = calculatorState.memory.toString();
-                    break;
-                case 'memoryAdd':
-                    calculatorState.memory += parseFloat(calculatorState.currentInput);
+                }
+                
+                if (this.equationMode) {
+                    this.updateEquationDisplay();
                     return;
-                case 'memorySubtract':
-                    calculatorState.memory -= parseFloat(calculatorState.currentInput);
-                    return;
-                default:
-                    return;
+                }
+                
+                // 更新表达式显示，包括光标
+                let displayExpression = this.expression;
+                
+                // 插入光标字符
+                if (this.cursorVisible) {
+                    displayExpression = this.expression.slice(0, this.cursorPosition) + 
+                                      '■' + 
+                                      this.expression.slice(this.cursorPosition);
+                } else {
+                    displayExpression = this.expression.slice(0, this.cursorPosition) + 
+                                      '□' + 
+                                      this.expression.slice(this.cursorPosition);
+                }
+                
+                this.expressionElement.textContent = displayExpression;
+                this.resultElement.textContent = this.result;
             }
             
-            calculatorState.currentInput = result.toString();
-            calculatorState.waitingForNewInput = true;
-        }
+            setupEventListeners() {
+                // 数字按钮
+                document.querySelectorAll('.number').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        if (this.shiftActive) {
+                            this.handleShiftInput(value);
+                        } else if (this.alphaActive) {
+                            this.handleAlphaInput(value);
+                        } else {
+                            this.insertAtCursor(value);
+                        }
+                    });
+                });
+                
+                // 运算符按钮
+                document.querySelectorAll('.operator').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.insertAtCursor(button.getAttribute('data-value'));
+                    });
+                });
+                
+                // 括号和逗号、小数点
+                document.querySelectorAll('.function[data-value]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.insertAtCursor(button.getAttribute('data-value'));
+                    });
+                });
+                
+                // 执行按钮
+                document.getElementById('execute').addEventListener('click', () => {
+                    if (this.catalogActive) {
+                        this.selectCatalogItem();
+                    } else {
+                        this.executeCalculation();
+                    }
+                });
+                
+                // 清除按钮
+                document.getElementById('clear').addEventListener('click', () => {
+                    if (this.catalogActive) {
+                        this.hideCatalog();
+                    } else if (this.equationMode) {
+                        this.hideEquationMode();
+                    } else {
+                        this.clear();
+                    }
+                });
+                
+                // 删除按钮
+                document.getElementById('delete').addEventListener('click', () => {
+                    this.deleteAtCursor();
+                });
+                
+                // Shift按钮
+                document.getElementById('shift').addEventListener('click', () => {
+                    this.toggleShift();
+                });
 
-        // 清除
-        function clear(action) {
-            if (action === 'clear') {
-                calculatorState.currentInput = '0';
-                calculatorState.previousInput = '';
-                calculatorState.operator = null;
-                calculatorState.waitingForNewInput = false;
+                // Alpha按钮
+                document.getElementById('alp').addEventListener('click', () => {
+                    this.toggleAlpha();
+                });
+                
+                // CTL按钮 - 显示目录或方程模式
+                document.getElementById('ctl').addEventListener('click', () => {
+                    if (this.shiftActive) {
+                        // Shift+CTL 进入方程模式
+                        if (this.equationMode) {
+                            this.hideEquationMode();
+                        } else {
+                            this.showEquationMode();
+                        }
+                    } else {
+                        // 普通CTL 进入目录模式
+                        if (this.catalogActive) {
+                            this.hideCatalog();
+                        } else {
+                            this.showCatalog();
+                        }
+                    }
+                });
+                
+                // FMT按钮 - 切换分数/小数模式
+                document.getElementById('fmt').addEventListener('click', () => {
+                    this.toggleFractionMode();
+                });
+                
+                // Ans按钮
+                document.getElementById('ans').addEventListener('click', () => {
+                    this.insertAtCursor(this.lastResult.toString());
+                });
+                
+                // 百分比按钮
+                document.getElementById('percent').addEventListener('click', () => {
+                    try {
+                        // 计算当前表达式的百分比
+                        let exprToEval = this.expression
+                            .replace(/×/g, '*')
+                            .replace(/÷/g, '/')
+                            .replace(/\^/g, '**');
+                        
+                        const calcFunction = new Function('return ' + exprToEval + '/100');
+                        this.expression = calcFunction().toString();
+                        this.cursorPosition = this.expression.length;
+                        this.updateDisplay();
+                    } catch (error) {
+                        this.result = 'Error';
+                        this.updateDisplay();
+                        
+                        setTimeout(() => {
+                            this.result = '0';
+                            this.updateDisplay();
+                        }, 2000);
+                    }
+                });
+                
+                // 光标左移按钮
+                document.getElementById('cursor-left').addEventListener('click', () => {
+                    this.moveCursorLeft();
+                });
+                
+                // 光标右移按钮
+                document.getElementById('cursor-right').addEventListener('click', () => {
+                    this.moveCursorRight();
+                });
+                
+                // RESET按钮 - 重置所有变量
+                document.getElementById('left-arrow').addEventListener('click', () => {
+                    this.resetVariables();
+                });
+                
+                // →按钮 - 赋值功能
+                document.getElementById('right-arrow').addEventListener('click', () => {
+                    this.insertAtCursor('→');
+                });
+                
+                // 其他功能按钮（暂时不实现具体功能）
+                document.getElementById('pwr').addEventListener('click', () => {
+                    alert('电源功能');
+                });
             }
         }
 
-        // 计算
-        function calculate() {
-            if (!calculatorState.operator || calculatorState.waitingForNewInput) return;
-            
-            const prev = parseFloat(calculatorState.previousInput);
-            const current = parseFloat(calculatorState.currentInput);
-            let result;
-            
-            switch (calculatorState.operator) {
-                case '+':
-                    result = prev + current;
-                    break;
-                case '-':
-                    result = prev - current;
-                    break;
-                case '*':
-                    result = prev * current;
-                    break;
-                case '/':
-                    result = prev / current;
-                    break;
-                default:
-                    return;
-            }
-            
-            calculatorState.currentInput = result.toString();
-            calculatorState.operator = null;
-            calculatorState.waitingForNewInput = true;
-        }
-
-        // 更新显示
-        function updateDisplay() {
-            // 限制显示长度
-            let displayText = calculatorState.currentInput;
-            if (displayText.length > 16) {
-                displayText = parseFloat(displayText).toExponential(8);
-            }
-            
-            displayElement.textContent = displayText;
-        }
-
-        // 重置计算器
-        function resetCalculator() {
-            calculatorState = {
-                currentInput: '0',
-                previousInput: '',
-                operator: null,
-                waitingForNewInput: false,
-                memory: 0,
-                displayText: '0'
-            };
-            updateDisplay();
-        }
-
-        // 显示状态消息
-        function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = `status ${type}`;
-            
-            // 3秒后清除状态消息
-            setTimeout(() => {
-                statusMessage.textContent = '';
-                statusMessage.className = 'status';
-            }, 3000);
-        }
+        // 初始化计算器
+        const calculator = new Calculator();
     </script>
 </body>
 </html>
