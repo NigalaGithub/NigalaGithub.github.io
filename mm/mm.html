@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简翻译 · 109种语言</title>
+    <!-- 极简风格：无样式，只保留功能 -->
+</head>
+<body>
+    <h2>🌐 翻译 (109种语言)</h2>
+    
+    <!-- 源语言 / 目标语言 -->
+    <div style="margin-bottom: 8px;">
+        <label>源语言:
+            <select id="fromLang" style="width: 140px;"></select>
+        </label>
+        <label style="margin-left: 10px;">目标语言:
+            <select id="toLang" style="width: 140px;"></select>
+        </label>
+    </div>
+
+    <!-- 输入文本框 -->
+    <div>
+        <textarea id="sourceText" rows="4" cols="60" placeholder="输入要翻译的文本… 例如: Hello world">こんにちは</textarea>
+    </div>
+
+    <!-- 翻译按钮 -->
+    <div style="margin: 10px 0;">
+        <button id="translateBtn">翻译</button>
+    </div>
+
+    <!-- 输出译文 (只读文本框) -->
+    <div>
+        <textarea id="targetTextDisplay" rows="4" cols="60" readonly placeholder="译文将显示在这里"></textarea>
+    </div>
+
+    <!-- 额外信息 (语言/发音) 以极小文字显示 -->
+    <div style="font-size: 0.9em; color: #333; margin-top: 8px;">
+        <span id="sourceMeta"></span> 
+        <span id="targetMeta" style="margin-left: 20px;"></span>
+    </div>
+
+    <script>
+        (function() {
+            // API 配置
+            const API_BASE = 'https://60s.viki.moe';
+            const TRANSLATE_PATH = '/v2/fanyi';
+            const LANGS_PATH = '/fanyi/langs';
+
+            // 备选语言 (当动态加载失败时使用)
+            const FALLBACK_LANGS = {
+                'auto': '🌐 自动检测',
+                'zh-CHS': '中文(简体)',
+                'en': '英文',
+                'ja': '日文',
+                'ko': '韩文',
+                'fr': '法文',
+                'de': '德文',
+                'ru': '俄文'
+            };
+
+            // DOM 元素
+            const fromSelect = document.getElementById('fromLang');
+            const toSelect = document.getElementById('toLang');
+            const sourceTextArea = document.getElementById('sourceText');
+            const translateBtn = document.getElementById('translateBtn');
+            const targetTextDisplay = document.getElementById('targetTextDisplay');
+            const sourceMetaSpan = document.getElementById('sourceMeta');
+            const targetMetaSpan = document.getElementById('targetMeta');
+
+            // 加载语言列表
+            async function loadLanguages() {
+                try {
+                    const response = await fetch(`${API_BASE}${LANGS_PATH}`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    
+                    // 解析语言映射
+                    let langMap = new Map();
+                    if (Array.isArray(data)) {
+                        data.forEach(item => {
+                            if (item.code && item.name) langMap.set(item.code, item.name);
+                        });
+                    } else if (data && typeof data === 'object') {
+                        Object.entries(data).forEach(([code, name]) => {
+                            if (typeof name === 'string') langMap.set(code, name);
+                        });
+                    }
+                    
+                    // 确保至少包含 auto
+                    if (!langMap.has('auto')) langMap.set('auto', '🌐 自动检测');
+                    if (langMap.size < 5) { // 解析不充分则合并 fallback
+                        Object.entries(FALLBACK_LANGS).forEach(([code, name]) => {
+                            if (!langMap.has(code)) langMap.set(code, name);
+                        });
+                    }
+                    populateSelects(langMap);
+                } catch (err) {
+                    console.warn('语言列表加载失败，使用备用列表', err);
+                    const fallbackMap = new Map(Object.entries(FALLBACK_LANGS));
+                    populateSelects(fallbackMap);
+                }
+            }
+
+            function populateSelects(langMap) {
+                let optionsHtml = [];
+                // auto 置顶
+                if (langMap.has('auto')) {
+                    optionsHtml.push(`<option value="auto">${langMap.get('auto')}</option>`);
+                    langMap.delete('auto');
+                }
+                // 其余排序
+                const sorted = Array.from(langMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+                sorted.forEach(([code, name]) => {
+                    optionsHtml.push(`<option value="${code}">${name}</option>`);
+                });
+                const optionsString = optionsHtml.join('');
+                fromSelect.innerHTML = optionsString;
+                toSelect.innerHTML = optionsString;
+                fromSelect.value = 'auto';
+                toSelect.value = 'auto';
+            }
+
+            // 执行翻译
+            async function performTranslation() {
+                const text = sourceTextArea.value.trim();
+                if (!text) {
+                    alert('请输入文本');
+                    return;
+                }
+
+                const from = fromSelect.value;
+                const to = toSelect.value;
+
+                // 禁用按钮，避免重复点击
+                translateBtn.disabled = true;
+                translateBtn.innerText = '翻译中...';
+
+                try {
+                    const params = new URLSearchParams({
+                        text: text,
+                        from: from,
+                        to: to
+                    });
+                    const url = `${API_BASE}${TRANSLATE_PATH}?${params.toString()}`;
+
+                    const response = await fetch(url, { mode: 'cors' });
+                    if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+                    
+                    const result = await response.json();
+                    // 根据规范判断成功 (code 为 0 或 200 或存在 data.source)
+                    if (result.code === 0 || result.code === 200 || (result.data && result.data.target)) {
+                        displayResult(result.data);
+                    } else {
+                        throw new Error(result.message || '翻译失败');
+                    }
+                } catch (error) {
+                    targetTextDisplay.value = `错误: ${error.message}`;
+                    sourceMetaSpan.innerText = '';
+                    targetMetaSpan.innerText = '';
+                } finally {
+                    translateBtn.disabled = false;
+                    translateBtn.innerText = '翻译';
+                }
+            }
+
+            function displayResult(data) {
+                if (!data || !data.target) {
+                    targetTextDisplay.value = '返回数据异常';
+                    return;
+                }
+                // 译文显示在主文本框中
+                targetTextDisplay.value = data.target.text || '';
+
+                // 元信息显示 (源语言类型/发音, 目标语言类型/发音)
+                const src = data.source || {};
+                const tgt = data.target || {};
+                
+                let srcInfo = [];
+                if (src.type_desc) srcInfo.push(`原文: ${src.type_desc}`);
+                if (src.pronounce) srcInfo.push(`发音: ${src.pronounce}`);
+                sourceMetaSpan.innerText = srcInfo.join(' · ');
+
+                let tgtInfo = [];
+                if (tgt.type_desc) tgtInfo.push(`译文: ${tgt.type_desc}`);
+                if (tgt.pronounce) tgtInfo.push(`发音: ${tgt.pronounce}`);
+                targetMetaSpan.innerText = tgtInfo.join(' · ');
+            }
+
+            // 初始化
+            loadLanguages();
+
+            // 绑定事件
+            translateBtn.addEventListener('click', performTranslation);
+            // Ctrl+Enter 快捷翻译
+            sourceTextArea.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    performTranslation();
+                }
+            });
+
+            // 如果预填了文本，自动执行一次翻译
+            if (sourceTextArea.value.trim() !== '') {
+                setTimeout(performTranslation, 100);
+            }
+        })();
+    </script>
+</body>
+</html>
